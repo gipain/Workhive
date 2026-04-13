@@ -13,6 +13,13 @@ class ComplaintUpdate(BaseModel):
     admin_notes: str | None = Field(None, max_length=2000)
 
 
+class ComplaintUserInfo(BaseModel):
+    id: uuid.UUID
+    email: str
+
+    model_config = {"from_attributes": True}
+
+
 class ComplaintResponse(BaseModel):
     id: uuid.UUID
     reporter_id: uuid.UUID
@@ -22,6 +29,8 @@ class ComplaintResponse(BaseModel):
     admin_notes: str | None = None
     created_at: datetime
     resolved_at: datetime | None = None
+    reporter: ComplaintUserInfo | None = None
+    target_user: ComplaintUserInfo | None = None
 
     model_config = {"from_attributes": True}
 
