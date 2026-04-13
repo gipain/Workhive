@@ -1,7 +1,7 @@
 import uuid
 
 from fastapi import APIRouter
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import joinedload
 
 from app.api.deps import CurrentUser, DB
@@ -42,16 +42,37 @@ def get_certificate(certificate_id: uuid.UUID, db: DB):
 
 @router.get("/{certificate_id}/download")
 def download_certificate(certificate_id: uuid.UUID, db: DB):
-    cert = db.query(Certificate).filter(Certificate.id == certificate_id).first()
+    from app.models.user import StudentProfile, CompanyProfile
+    from app.services.certificate_service import render_certificate_pdf_bytes
+
+    cert = (
+        db.query(Certificate)
+        .filter(Certificate.id == certificate_id)
+        .first()
+    )
     if not cert:
         raise NotFoundError("Сертифікат не знайдено")
 
-    import os
-    if not os.path.exists(cert.pdf_url):
-        raise NotFoundError("PDF файл не знайдено")
+    project = cert.project
+    student = db.query(StudentProfile).filter(StudentProfile.id == cert.student_id).first()
+    company = db.query(CompanyProfile).filter(CompanyProfile.id == project.company_id).first() if project else None
 
-    return FileResponse(
-        cert.pdf_url,
+    student_name = f"{student.first_name} {student.last_name}" if student else "Студент"
+    project_title = project.title if project else "Проєкт"
+    company_name = company.company_name if company else "WorkHive"
+    issue_date = cert.issued_at.strftime("%d.%m.%Y") if cert.issued_at else "—"
+    cert_code = str(cert.id)[:8].upper()
+
+    pdf_bytes = render_certificate_pdf_bytes(
+        student_name=student_name,
+        project_title=project_title,
+        company_name=company_name,
+        certificate_id=cert_code,
+        issue_date=issue_date,
+    )
+
+    return Response(
+        content=pdf_bytes,
         media_type="application/pdf",
-        filename=f"workhive_certificate_{certificate_id}.pdf",
+        headers={"Content-Disposition": f'attachment; filename="workhive_certificate_{cert_code}.pdf"'},
     )
