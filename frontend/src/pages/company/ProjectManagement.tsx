@@ -10,7 +10,7 @@ import { Modal } from '../../components/ui/Modal';
 import { PageLoader } from '../../components/ui/Skeleton';
 import { SkillTag } from '../../components/shared/SkillTag';
 import { EmptyState } from '../../components/shared/EmptyState';
-import { ArrowLeft, Calendar, Users, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, CheckCircle, XCircle, Eye, GraduationCap, Star, Briefcase, ExternalLink } from 'lucide-react';
 import { formatDate, formatDateTime } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
@@ -155,27 +155,83 @@ export default function ProjectManagement() {
           <div className="space-y-3">
             {applications.map((a) => (
               <Card key={a.id}>
-                <CardContent className="flex items-center justify-between py-4 gap-4 flex-wrap">
-                  <div className="min-w-0">
-                    <p className="font-semibold text-slate-900">{a.student?.first_name} {a.student?.last_name}</p>
-                    <p className="text-xs text-slate-400">{a.student?.email} · {formatDate(a.created_at)}</p>
-                    {a.cover_letter && <p className="text-sm text-slate-600 mt-1">{a.cover_letter}</p>}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {a.status === 'pending' ? (
-                      <>
-                        <Button size="sm" onClick={() => handleApplication(a.id, 'accept')} isLoading={acting}>
-                          <CheckCircle size={14} /> Прийняти
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => handleApplication(a.id, 'reject')} isLoading={acting}>
-                          <XCircle size={14} /> Відхилити
-                        </Button>
-                      </>
-                    ) : (
-                      <Badge variant={a.status === 'accepted' ? 'success' : 'danger'}>
-                        {a.status === 'accepted' ? 'Прийнято' : 'Відхилено'}
-                      </Badge>
-                    )}
+                <CardContent className="py-4 gap-4">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <div className="min-w-0 flex-1">
+                      {/* Name + date */}
+                      <p className="font-semibold text-slate-900">{a.student?.first_name} {a.student?.last_name}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{a.student?.email} · {formatDate(a.created_at)}</p>
+
+                      {/* University + graduation */}
+                      {(a.student?.university || a.student?.graduation_year) && (
+                        <p className="text-sm text-slate-600 mt-1.5 flex items-center gap-1.5">
+                          <GraduationCap size={13} className="text-slate-400 shrink-0" />
+                          {a.student.university}{a.student.university && a.student.graduation_year ? ', ' : ''}{a.student.graduation_year && `випуск ${a.student.graduation_year}`}
+                        </p>
+                      )}
+
+                      {/* Stats */}
+                      {((a.student?.rating_avg ?? 0) > 0 || (a.student?.total_completed ?? 0) > 0) && (
+                        <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500">
+                          {(a.student?.rating_avg ?? 0) > 0 && (
+                            <span className="flex items-center gap-1"><Star size={11} className="text-amber-400" /> {a.student!.rating_avg.toFixed(1)}</span>
+                          )}
+                          {(a.student?.total_completed ?? 0) > 0 && (
+                            <span className="flex items-center gap-1"><Briefcase size={11} /> {a.student!.total_completed} завершених</span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Skills */}
+                      {a.student?.skills && a.student.skills.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {a.student.skills.map((s) => <SkillTag key={s.id} name={s.name} />)}
+                        </div>
+                      )}
+
+                      {/* Bio */}
+                      {a.student?.bio && (
+                        <p className="text-sm text-slate-500 mt-2 line-clamp-2">{a.student.bio}</p>
+                      )}
+
+                      {/* Cover letter */}
+                      {a.cover_letter && (
+                        <p className="text-sm text-slate-600 mt-2 border-l-2 border-indigo-200 pl-2">{a.cover_letter}</p>
+                      )}
+
+                      {/* Links */}
+                      {(a.student?.portfolio_url || a.student?.resume_url) && (
+                        <div className="flex gap-3 mt-2">
+                          {a.student.portfolio_url && (
+                            <a href={a.student.portfolio_url} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-500 hover:text-indigo-700 flex items-center gap-1 transition-colors">
+                              <ExternalLink size={11} /> Портфоліо
+                            </a>
+                          )}
+                          {a.student.resume_url && (
+                            <a href={a.student.resume_url} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-500 hover:text-indigo-700 flex items-center gap-1 transition-colors">
+                              <ExternalLink size={11} /> Резюме
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {a.status === 'pending' ? (
+                        <>
+                          <Button size="sm" onClick={() => handleApplication(a.id, 'accept')} isLoading={acting}>
+                            <CheckCircle size={14} /> Прийняти
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => handleApplication(a.id, 'reject')} isLoading={acting}>
+                            <XCircle size={14} /> Відхилити
+                          </Button>
+                        </>
+                      ) : (
+                        <Badge variant={a.status === 'accepted' ? 'success' : 'danger'}>
+                          {a.status === 'accepted' ? 'Прийнято' : 'Відхилено'}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
