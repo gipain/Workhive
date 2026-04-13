@@ -29,7 +29,7 @@ export function Input({ label, error, className, id, type, ...props }: InputProp
             'focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400',
             'placeholder:text-slate-400',
             '[&::-ms-reveal]:hidden [&::-ms-clear]:hidden',
-            error ? 'border-red-300 bg-red-50/50' : 'border-slate-200 bg-white hover:border-slate-300',
+            error ? 'border-red-300 bg-red-50/50' : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white',
             isPassword && 'pr-10',
             className
           )}

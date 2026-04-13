@@ -21,7 +21,7 @@ export function TextArea({ label, error, className, id, ...props }: TextAreaProp
           'w-full px-4 py-2.5 border rounded-xl text-sm transition-all duration-200 resize-y min-h-[80px]',
           'focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400',
           'placeholder:text-slate-400',
-          error ? 'border-red-300 bg-red-50/50' : 'border-slate-200 bg-white hover:border-slate-300',
+          error ? 'border-red-300 bg-red-50/50' : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white',
           className
         )}
         {...props}
