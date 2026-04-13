@@ -1,7 +1,7 @@
 """
-Email sending via SendGrid v3 HTTP API (works on Railway — uses HTTPS, no SMTP).
-Free tier: 100 emails/day, sends to any recipient.
-Falls back to logging the reset link if SENDGRID_API_KEY is not configured.
+Email sending via Brevo (Sendinblue) HTTP API (works on Railway — uses HTTPS, no SMTP).
+Free tier: 300 emails/day, sends to any recipient, no credit card needed.
+Falls back to logging the reset link if BREVO_API_KEY is not configured.
 """
 import logging
 
@@ -11,24 +11,24 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-_SENDGRID_URL = "https://api.sendgrid.com/v3/mail/send"
+_BREVO_URL = "https://api.brevo.com/v3/smtp/email"
 
 
 def _email_configured() -> bool:
-    return bool(settings.SENDGRID_API_KEY)
+    return bool(settings.BREVO_API_KEY)
 
 
 def _send_email(to_email: str, subject: str, html: str) -> None:
     payload = {
-        "personalizations": [{"to": [{"email": to_email}]}],
-        "from": {"email": settings.SENDGRID_FROM_EMAIL, "name": "WorkHive"},
+        "sender": {"email": settings.BREVO_FROM_EMAIL, "name": "WorkHive"},
+        "to": [{"email": to_email}],
         "subject": subject,
-        "content": [{"type": "text/html", "value": html}],
+        "htmlContent": html,
     }
     resp = httpx.post(
-        _SENDGRID_URL,
+        _BREVO_URL,
         json=payload,
-        headers={"Authorization": f"Bearer {settings.SENDGRID_API_KEY}"},
+        headers={"api-key": settings.BREVO_API_KEY},
         timeout=15,
     )
     resp.raise_for_status()
@@ -68,7 +68,7 @@ def send_password_reset_email(to_email: str, reset_token: str) -> None:
     """
 
     if not _email_configured():
-        logger.warning("SENDGRID_API_KEY not configured — skipping email send")
+        logger.warning("BREVO_API_KEY not configured — skipping email send")
         logger.warning("RESET LINK (use this directly): %s", reset_url)
         return
 

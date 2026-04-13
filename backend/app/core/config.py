@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     SENDGRID_API_KEY: str = ""
     SENDGRID_FROM_EMAIL: str = "noreply@workhive.com"
 
+    # Brevo (Sendinblue)
+    BREVO_API_KEY: str = ""
+    BREVO_FROM_EMAIL: str = "noreply@workhive.com"
+
     # Resend
     RESEND_API_KEY: str = ""
     RESEND_FROM_EMAIL: str = "WorkHive <onboarding@resend.dev>"

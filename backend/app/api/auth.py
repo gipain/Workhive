@@ -115,7 +115,7 @@ def forgot_password(data: ForgotPasswordRequest, db: DB):
 
     send_password_reset_email(str(data.email), reset_token)
 
-    email_configured = bool(settings.SENDGRID_API_KEY)
+    email_configured = bool(settings.BREVO_API_KEY)
 
     return ForgotPasswordResponse(
         message="Посилання для скидання пароля надіслано на ваш email." if email_configured
