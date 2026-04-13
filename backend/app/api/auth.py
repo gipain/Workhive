@@ -98,8 +98,8 @@ def get_me(current_user: CurrentUser):
 @router.post("/forgot-password", response_model=ForgotPasswordResponse)
 def forgot_password(data: ForgotPasswordRequest, db: DB):
     """
-    Generate a password-reset token and send it by email (Resend).
-    If RESEND_API_KEY is not configured, the token is returned in the response for development use.
+    Generate a password-reset token and send it by email (Gmail SMTP).
+    If SMTP is not configured, the reset link is logged server-side.
     """
     from app.core.config import settings
 
@@ -113,16 +113,14 @@ def forgot_password(data: ForgotPasswordRequest, db: DB):
 
     reset_token = create_reset_token(str(data.email))
 
-    # Send real email if Resend is configured
     send_password_reset_email(str(data.email), reset_token)
 
-    # Only expose the raw token in the response when email is not configured (dev mode)
-    exposed_token = "" if settings.RESEND_API_KEY else reset_token
+    email_configured = bool(settings.SMTP_USER and settings.SMTP_PASSWORD)
 
     return ForgotPasswordResponse(
-        message="Посилання для скидання пароля надіслано на ваш email." if settings.RESEND_API_KEY
-                else "Токен для скидання пароля сформовано (email не налаштовано).",
-        reset_token=exposed_token,
+        message="Посилання для скидання пароля надіслано на ваш email." if email_configured
+                else "Email не налаштовано — посилання записано в логи сервера.",
+        reset_token="" if email_configured else reset_token,
     )
 
 
