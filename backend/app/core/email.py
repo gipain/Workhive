@@ -64,3 +64,5 @@ def send_password_reset_email(to_email: str, reset_token: str) -> None:
         logger.info("Password reset email sent to %s", to_email)
     except Exception as exc:
         logger.error("Failed to send reset email to %s: %s", to_email, exc)
+        # Fallback: log the reset URL so it can be used directly from server logs
+        logger.warning("RESET LINK (use this if email failed): %s", reset_url)
