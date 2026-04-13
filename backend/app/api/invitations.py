@@ -8,6 +8,7 @@ from app.core.exceptions import NotFoundError, ForbiddenError, BadRequestError
 from app.models.user import UserRole
 from app.models.project import Project, ProjectStatus
 from app.models.invitation import Invitation, InvitationStatus
+from app.models.application import Application, ApplicationStatus
 from app.models.notification import Notification
 from app.schemas.invitation import InvitationCreate, InvitationStatusUpdate, InvitationResponse, InvitationListResponse
 
@@ -109,6 +110,21 @@ def respond_to_invitation(
 
     if data.status == "accepted":
         project.status = ProjectStatus.in_progress
+
+        # Create (or update) an accepted Application so the student appears in the project
+        existing_app = db.query(Application).filter(
+            Application.project_id == invitation.project_id,
+            Application.student_id == invitation.student_id,
+        ).first()
+        if existing_app:
+            existing_app.status = ApplicationStatus.accepted
+        else:
+            db.add(Application(
+                project_id=invitation.project_id,
+                student_id=invitation.student_id,
+                status=ApplicationStatus.accepted,
+                cover_letter="(прийнято через запрошення)",
+            ))
 
     notification = Notification(
         user_id=invitation.company.user_id,
