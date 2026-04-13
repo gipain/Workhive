@@ -7,13 +7,13 @@ import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { PageLoader } from '../../components/ui/Skeleton';
-import { Briefcase, Users, FileCheck, ArrowRight, Plus } from 'lucide-react';
+import { Briefcase, Users, FileCheck, CheckCircle2, ArrowRight, Plus } from 'lucide-react';
 import { formatDate } from '../../utils/helpers';
 
 export default function CompanyDashboard() {
   const { user } = useAuthStore();
   const [projects, setProjects] = useState<Project[]>([]);
-  const [stats, setStats] = useState({ total: 0, open: 0, inProgress: 0 });
+  const [stats, setStats] = useState({ total: 0, open: 0, inProgress: 0, completed: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,6 +26,7 @@ export default function CompanyDashboard() {
           total: items.length,
           open: items.filter((p) => p.status === 'open').length,
           inProgress: items.filter((p) => p.status === 'in_progress').length,
+          completed: items.filter((p) => p.status === 'completed').length,
         });
       } catch {
         // ignore
@@ -50,11 +51,12 @@ export default function CompanyDashboard() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 animate-fade-in-up delay-100">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-5 animate-fade-in-up delay-100">
         {[
           { icon: <Briefcase size={22} />, label: 'Усього проєктів', value: stats.total, gradient: 'from-indigo-500 to-blue-500', bg: 'bg-indigo-50' },
           { icon: <FileCheck size={22} />, label: 'Відкритих', value: stats.open, gradient: 'from-emerald-500 to-teal-500', bg: 'bg-emerald-50' },
           { icon: <Users size={22} />, label: 'В роботі', value: stats.inProgress, gradient: 'from-amber-500 to-orange-500', bg: 'bg-amber-50' },
+          { icon: <CheckCircle2 size={22} />, label: 'Завершених', value: stats.completed, gradient: 'from-violet-500 to-purple-500', bg: 'bg-violet-50' },
         ].map((s) => (
           <Card key={s.label}>
             <CardContent className="flex items-center gap-4 !py-5">
