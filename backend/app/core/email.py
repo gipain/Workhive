@@ -1,7 +1,6 @@
 """
-Email sending via Mailjet v3.1 HTTP API (works on Railway — uses HTTPS, no SMTP).
-Free tier: 200 emails/day, sends to any recipient, no credit card needed.
-Falls back to logging the reset link if MAILJET_API_KEY is not configured.
+Email sending via Google Apps Script webhook (uses Gmail — free, any recipient).
+Falls back to logging the reset link if GAS_WEBHOOK_URL is not configured.
 """
 import logging
 
@@ -11,27 +10,21 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-_MAILJET_URL = "https://api.mailjet.com/v3.1/send"
-
 
 def _email_configured() -> bool:
-    return bool(settings.MAILJET_API_KEY and settings.MAILJET_SECRET_KEY)
+    return bool(settings.GAS_WEBHOOK_URL)
 
 
 def _send_email(to_email: str, subject: str, html: str) -> None:
-    payload = {
-        "Messages": [{
-            "From": {"Email": settings.MAILJET_FROM_EMAIL, "Name": "WorkHive"},
-            "To": [{"Email": to_email}],
-            "Subject": subject,
-            "HTMLPart": html,
-        }]
-    }
     resp = httpx.post(
-        _MAILJET_URL,
-        json=payload,
-        auth=(settings.MAILJET_API_KEY, settings.MAILJET_SECRET_KEY),
-        timeout=15,
+        settings.GAS_WEBHOOK_URL,
+        json={
+            "secret": "WORKHIVE_SECRET_2026",
+            "to": to_email,
+            "subject": subject,
+            "html": html,
+        },
+        timeout=20,
     )
     resp.raise_for_status()
 
@@ -70,7 +63,7 @@ def send_password_reset_email(to_email: str, reset_token: str) -> None:
     """
 
     if not _email_configured():
-        logger.warning("MAILJET_API_KEY/SECRET_KEY not configured — skipping email send")
+        logger.warning("GAS_WEBHOOK_URL not configured — skipping email send")
         logger.warning("RESET LINK (use this directly): %s", reset_url)
         return
 

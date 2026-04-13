@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     MAILJET_SECRET_KEY: str = ""
     MAILJET_FROM_EMAIL: str = "noreply@workhive.com"
 
+    # Google Apps Script email webhook
+    GAS_WEBHOOK_URL: str = ""
+
     # Resend
     RESEND_API_KEY: str = ""
     RESEND_FROM_EMAIL: str = "WorkHive <onboarding@resend.dev>"

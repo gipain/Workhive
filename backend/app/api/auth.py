@@ -115,7 +115,7 @@ def forgot_password(data: ForgotPasswordRequest, db: DB):
 
     send_password_reset_email(str(data.email), reset_token)
 
-    email_configured = bool(settings.MAILJET_API_KEY and settings.MAILJET_SECRET_KEY)
+    email_configured = bool(settings.GAS_WEBHOOK_URL)
 
     return ForgotPasswordResponse(
         message="Посилання для скидання пароля надіслано на ваш email." if email_configured
