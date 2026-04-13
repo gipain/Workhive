@@ -32,16 +32,22 @@ export default function ProjectManagement() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [projRes, appsRes, subsRes] = await Promise.all([
+        const [projRes, appsRes, subsRes] = await Promise.allSettled([
           api.get(`/api/projects/${id}`),
           api.get(`/api/applications/project/${id}`),
           api.get(`/api/submissions?project_id=${id}`),
         ]);
-        setProject(projRes.data);
-        setApplications(appsRes.data.items || appsRes.data);
-        setSubmissions(subsRes.data.items || subsRes.data);
-      } catch {
-        toast.error('Помилка завантаження');
+        if (projRes.status === 'fulfilled') {
+          setProject(projRes.value.data);
+        } else {
+          toast.error('Помилка завантаження проєкту');
+        }
+        if (appsRes.status === 'fulfilled') {
+          setApplications(appsRes.value.data.items || appsRes.value.data);
+        }
+        if (subsRes.status === 'fulfilled') {
+          setSubmissions(subsRes.value.data.items || subsRes.value.data);
+        }
       } finally {
         setLoading(false);
       }
