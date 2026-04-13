@@ -1,14 +1,55 @@
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useNotificationStore } from '../../store/notificationStore';
+import { useAuthStore } from '../../store/authStore';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { PageLoader } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/shared/EmptyState';
-import { CheckCheck } from 'lucide-react';
+import { CheckCheck, ArrowRight } from 'lucide-react';
 import { timeAgo } from '../../utils/helpers';
+import type { Notification } from '../../types';
+
+function getActionLink(n: Notification, role: string): { label: string; href: string } | null {
+  const meta = n.metadata_json || {};
+  const projectId = meta.project_id;
+  if (!projectId) return null;
+
+  switch (n.type) {
+    // Company receives these — go to project management
+    case 'application_received':
+    case 'submission_received':
+    case 'invitation_accepted':
+    case 'invitation_declined':
+      if (role === 'company') return { label: 'Переглянути проєкт', href: `/company/projects/${projectId}` };
+      break;
+    // Student receives these — go to project detail
+    case 'application_accepted':
+    case 'application_rejected':
+    case 'review_received':
+      if (role === 'student') return { label: 'Переглянути проєкт', href: `/student/projects/${projectId}` };
+      break;
+    // Student — go to submission page
+    case 'submission_approved':
+    case 'submission_changes_requested':
+      if (role === 'student') return { label: 'Переглянути здачу', href: `/student/submissions/${projectId}` };
+      break;
+    // Student — certificates
+    case 'certificate_ready':
+      if (role === 'student') return { label: 'Мої сертифікати', href: '/student/certificates' };
+      break;
+    // Student — invitation
+    case 'invitation_received':
+      if (role === 'student') return { label: 'Запрошення', href: '/student/invitations' };
+      break;
+  }
+  return null;
+}
 
 export default function NotificationsPage() {
   const { notifications, isLoading, fetchNotifications, markAsRead, markAllAsRead } = useNotificationStore();
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchNotifications();
@@ -36,22 +77,33 @@ export default function NotificationsPage() {
         <EmptyState title="Сповіщень немає" description="Тут з'являтимуться ваші сповіщення" />
       ) : (
         <div className="space-y-2">
-          {notifications.map((n) => (
-            <Card key={n.id} className={`transition-all duration-200 ${!n.is_read ? 'bg-indigo-50/50 border-indigo-200/60' : ''}`}>
-              <CardContent className="flex items-start gap-3 py-3">
-                <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${!n.is_read ? 'bg-indigo-500' : 'bg-transparent'}`} />
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm ${!n.is_read ? 'font-semibold text-slate-900' : 'text-slate-600'}`}>{n.message}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">{timeAgo(n.created_at)}</p>
-                </div>
-                {!n.is_read && (
-                  <button onClick={() => markAsRead(n.id)} className="text-xs text-indigo-500 hover:text-indigo-600 font-medium flex-shrink-0 transition-colors">
-                    Прочитано
-                  </button>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+          {notifications.map((n) => {
+            const action = user ? getActionLink(n, user.role) : null;
+            return (
+              <Card key={n.id} className={`transition-all duration-200 ${!n.is_read ? 'bg-indigo-50/50 border-indigo-200/60' : ''}`}>
+                <CardContent className="flex items-start gap-3 py-3">
+                  <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${!n.is_read ? 'bg-indigo-500' : 'bg-transparent'}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm ${!n.is_read ? 'font-semibold text-slate-900' : 'text-slate-600'}`}>{n.message}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{timeAgo(n.created_at)}</p>
+                    {action && (
+                      <button
+                        onClick={() => { if (!n.is_read) markAsRead(n.id); navigate(action.href); }}
+                        className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
+                      >
+                        {action.label} <ArrowRight size={11} />
+                      </button>
+                    )}
+                  </div>
+                  {!n.is_read && (
+                    <button onClick={() => markAsRead(n.id)} className="text-xs text-indigo-500 hover:text-indigo-600 font-medium flex-shrink-0 transition-colors">
+                      Прочитано
+                    </button>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
