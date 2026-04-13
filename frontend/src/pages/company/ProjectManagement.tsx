@@ -10,9 +10,10 @@ import { Modal } from '../../components/ui/Modal';
 import { PageLoader } from '../../components/ui/Skeleton';
 import { SkillTag } from '../../components/shared/SkillTag';
 import { EmptyState } from '../../components/shared/EmptyState';
-import { ArrowLeft, Calendar, Users, CheckCircle, XCircle, Eye, GraduationCap, Star, Briefcase, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, CheckCircle, XCircle, Eye, GraduationCap, Star, Briefcase, ExternalLink, Flag } from 'lucide-react';
 import { formatDate, formatDateTime } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import { ComplaintModal } from '../../components/shared/ComplaintModal';
 
 export default function ProjectManagement() {
   const { id } = useParams<{ id: string }>();
@@ -28,6 +29,9 @@ export default function ProjectManagement() {
   const [feedback, setFeedback] = useState('');
   const [rating, setRating] = useState(5);
   const [acting, setActing] = useState(false);
+
+  // Complaint
+  const [complaintTarget, setComplaintTarget] = useState<{ userId: string; name: string } | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -241,6 +245,15 @@ export default function ProjectManagement() {
                           {a.status === 'accepted' ? 'Прийнято' : 'Відхилено'}
                         </Badge>
                       )}
+                      {a.student?.user_id && (
+                        <button
+                          onClick={() => setComplaintTarget({ userId: a.student!.user_id, name: `${a.student!.first_name} ${a.student!.last_name}` })}
+                          className="text-slate-300 hover:text-rose-500 transition-colors p-1"
+                          title="Поскаржитись"
+                        >
+                          <Flag size={13} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -324,6 +337,15 @@ export default function ProjectManagement() {
           </div>
         </div>
       </Modal>
+
+      {complaintTarget && (
+        <ComplaintModal
+          isOpen={!!complaintTarget}
+          onClose={() => setComplaintTarget(null)}
+          targetUserId={complaintTarget.userId}
+          targetName={complaintTarget.name}
+        />
+      )}
     </div>
   );
 }

@@ -12,11 +12,12 @@ import { Pagination } from '../../components/ui/Pagination';
 import { EmptyState } from '../../components/shared/EmptyState';
 import { SkillTag } from '../../components/shared/SkillTag';
 import { RatingStars } from '../../components/shared/RatingStars';
-import { Search, Send, GraduationCap } from 'lucide-react';
+import { Search, Send, GraduationCap, Flag } from 'lucide-react';
 import { useDebounce } from '../../hooks/useApi';
 import toast from 'react-hot-toast';
 import type { Skill, Project } from '../../types';
 import { useAuthStore } from '../../store/authStore';
+import { ComplaintModal } from '../../components/shared/ComplaintModal';
 
 export default function BrowseStudents() {
   const { user } = useAuthStore();
@@ -33,6 +34,9 @@ export default function BrowseStudents() {
   const [inviteProjectId, setInviteProjectId] = useState('');
   const [inviteMessage, setInviteMessage] = useState('');
   const [inviting, setInviting] = useState(false);
+
+  // Complaint modal
+  const [complaintStudent, setComplaintStudent] = useState<StudentProfile | null>(null);
 
   const page = Number(searchParams.get('page')) || 1;
   const search = searchParams.get('search') || '';
@@ -157,6 +161,12 @@ export default function BrowseStudents() {
                   >
                     <Send size={14} /> Запросити до проєкту
                   </Button>
+                  <button
+                    onClick={() => setComplaintStudent(s)}
+                    className="w-full text-xs text-slate-400 hover:text-rose-500 transition-colors flex items-center justify-center gap-1 py-1"
+                  >
+                    <Flag size={11} /> Поскаржитись
+                  </button>
                 </CardContent>
               </Card>
             ))}
@@ -187,6 +197,15 @@ export default function BrowseStudents() {
           </div>
         </div>
       </Modal>
+
+      {complaintStudent && (
+        <ComplaintModal
+          isOpen={!!complaintStudent}
+          onClose={() => setComplaintStudent(null)}
+          targetUserId={complaintStudent.user_id}
+          targetName={`${complaintStudent.first_name} ${complaintStudent.last_name}`}
+        />
+      )}
     </div>
   );
 }

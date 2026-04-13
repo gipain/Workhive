@@ -10,9 +10,10 @@ import { Badge } from '../../components/ui/Badge';
 import { Modal } from '../../components/ui/Modal';
 import { PageLoader } from '../../components/ui/Skeleton';
 import { SkillTag } from '../../components/shared/SkillTag';
-import { Calendar, Building2, Users, ArrowLeft } from 'lucide-react';
+import { Calendar, Building2, Users, ArrowLeft, Flag } from 'lucide-react';
 import { formatDate } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import { ComplaintModal } from '../../components/shared/ComplaintModal';
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +24,7 @@ export default function ProjectDetail() {
   const [coverLetter, setCoverLetter] = useState('');
   const [applying, setApplying] = useState(false);
   const [alreadyApplied, setAlreadyApplied] = useState(false);
+  const [showComplaint, setShowComplaint] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -126,13 +128,19 @@ export default function ProjectDetail() {
         </Card>
       )}
 
-      {/* Apply */}
-      {user?.role === 'student' && project.status === 'open' && (
-        <div className="flex justify-end">
-          {alreadyApplied ? (
-            <Button disabled>Заявку вже подано</Button>
-          ) : (
-            <Button onClick={() => setShowApplyModal(true)}>Подати заявку</Button>
+      {/* Apply + Complain */}
+      {user?.role === 'student' && (
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <button
+            onClick={() => setShowComplaint(true)}
+            className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-rose-500 transition-colors"
+          >
+            <Flag size={12} /> Поскаржитись на компанію
+          </button>
+          {project.status === 'open' && (
+            alreadyApplied
+              ? <Button disabled>Заявку вже подано</Button>
+              : <Button onClick={() => setShowApplyModal(true)}>Подати заявку</Button>
           )}
         </div>
       )}
@@ -157,6 +165,15 @@ export default function ProjectDetail() {
           </div>
         </div>
       </Modal>
+
+      {project.company?.user_id && (
+        <ComplaintModal
+          isOpen={showComplaint}
+          onClose={() => setShowComplaint(false)}
+          targetUserId={project.company.user_id}
+          targetName={project.company.company_name}
+        />
+      )}
     </div>
   );
 }
