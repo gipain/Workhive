@@ -97,7 +97,9 @@ export default function StudentDashboard() {
                     <p className="font-semibold text-slate-900 truncate">{p.title}</p>
                     <p className="text-slate-400 text-xs mt-0.5">{p.company?.company_name} · до {formatDate(p.deadline)}</p>
                   </div>
-                  <Badge variant="default">{p.status}</Badge>
+                  <Badge variant={p.status === 'open' ? 'success' : p.status === 'in_progress' ? 'warning' : 'default'}>
+                    {p.status === 'open' ? 'Відкритий' : p.status === 'in_progress' ? 'В роботі' : p.status === 'completed' ? 'Завершено' : 'Скасовано'}
+                  </Badge>
                 </Link>
               ))}
             </div>
