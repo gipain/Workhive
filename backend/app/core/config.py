@@ -25,7 +25,7 @@ class Settings(BaseSettings):
 
     # Resend
     RESEND_API_KEY: str = ""
-    RESEND_FROM_EMAIL: str = "WorkHive <onboarding@resend.dev>"
+    RESEND_FROM_EMAIL: str = "WorkHive <onboarding@lpnu.ua>"
 
     # App
     APP_NAME: str = "WorkHive"

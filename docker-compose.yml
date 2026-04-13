@@ -27,7 +27,7 @@ services:
       FRONTEND_URL: http://localhost:3000
       UPLOAD_DIR: /app/uploads
       RESEND_API_KEY: re_9UnxEbot_PeG3GxMmKQNQZXAgh9t9AgRn
-      RESEND_FROM_EMAIL: "WorkHive <onboarding@resend.dev>"
+      RESEND_FROM_EMAIL: "WorkHive <onboarding@lpnu.ua>"
     depends_on:
       db:
         condition: service_healthy
