@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -31,7 +32,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-lg' 
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
       ref={overlayRef}
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 animate-fade-in"
@@ -46,6 +47,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-lg' 
         </div>
         <div className="px-6 py-5 overflow-y-auto">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
