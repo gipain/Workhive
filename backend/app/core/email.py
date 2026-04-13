@@ -1,28 +1,37 @@
 """
-Email sending via Resend HTTP API (works on Railway — uses HTTPS, no SMTP).
-Falls back to logging the reset link if RESEND_API_KEY is not configured.
+Email sending via SendGrid v3 HTTP API (works on Railway — uses HTTPS, no SMTP).
+Free tier: 100 emails/day, sends to any recipient.
+Falls back to logging the reset link if SENDGRID_API_KEY is not configured.
 """
 import logging
 
-import resend
+import httpx
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+_SENDGRID_URL = "https://api.sendgrid.com/v3/mail/send"
+
 
 def _email_configured() -> bool:
-    return bool(settings.RESEND_API_KEY)
+    return bool(settings.SENDGRID_API_KEY)
 
 
 def _send_email(to_email: str, subject: str, html: str) -> None:
-    resend.api_key = settings.RESEND_API_KEY
-    resend.Emails.send({
-        "from": settings.RESEND_FROM_EMAIL,
-        "to": [to_email],
+    payload = {
+        "personalizations": [{"to": [{"email": to_email}]}],
+        "from": {"email": settings.SENDGRID_FROM_EMAIL, "name": "WorkHive"},
         "subject": subject,
-        "html": html,
-    })
+        "content": [{"type": "text/html", "value": html}],
+    }
+    resp = httpx.post(
+        _SENDGRID_URL,
+        json=payload,
+        headers={"Authorization": f"Bearer {settings.SENDGRID_API_KEY}"},
+        timeout=15,
+    )
+    resp.raise_for_status()
 
 
 def send_password_reset_email(to_email: str, reset_token: str) -> None:
@@ -59,7 +68,7 @@ def send_password_reset_email(to_email: str, reset_token: str) -> None:
     """
 
     if not _email_configured():
-        logger.warning("RESEND_API_KEY not configured — skipping email send")
+        logger.warning("SENDGRID_API_KEY not configured — skipping email send")
         logger.warning("RESET LINK (use this directly): %s", reset_url)
         return
 
