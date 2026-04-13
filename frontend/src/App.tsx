@@ -23,6 +23,7 @@ const StudentInvitations = lazy(() => import('./pages/student/StudentInvitations
 const StudentProfilePage = lazy(() => import('./pages/student/StudentProfilePage'));
 const StudentCertificates = lazy(() => import('./pages/student/StudentCertificates'));
 const StudentSubmissions = lazy(() => import('./pages/student/StudentSubmissions'));
+const StudentMyProjects = lazy(() => import('./pages/student/MyProjects'));
 
 // Company pages
 const CompanyDashboard = lazy(() => import('./pages/company/CompanyDashboard'));
@@ -75,6 +76,7 @@ function App() {
             <Route path="/student/profile" element={<StudentProfilePage />} />
             <Route path="/student/certificates" element={<StudentCertificates />} />
             <Route path="/student/submissions/:projectId" element={<StudentSubmissions />} />
+            <Route path="/student/my-projects" element={<StudentMyProjects />} />
             <Route path="/student/notifications" element={<NotificationsPage />} />
           </Route>
 

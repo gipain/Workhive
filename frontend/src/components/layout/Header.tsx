@@ -29,6 +29,7 @@ export function Header() {
           { to: `${base}/dashboard`, label: 'Дашборд' },
           { to: `${base}/projects`, label: 'Проєкти' },
           { to: `${base}/applications`, label: 'Мої заявки' },
+          { to: `${base}/my-projects`, label: 'Мої проєкти' },
           { to: `${base}/certificates`, label: 'Сертифікати' },
           { to: `${base}/profile`, label: 'Профіль' },
         ];
