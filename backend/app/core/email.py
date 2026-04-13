@@ -1,5 +1,5 @@
 """
-Email sending via Gmail SMTP (smtplib, no external library needed).
+Email sending via Gmail SMTP (port 465, SSL).
 Falls back to logging the reset link if SMTP is not configured.
 """
 import logging
@@ -23,10 +23,7 @@ def _send_via_smtp(to_email: str, subject: str, html: str) -> None:
     msg["To"] = to_email
     msg.attach(MIMEText(html, "html", "utf-8"))
 
-    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=15) as server:
-        server.ehlo()
-        server.starttls()
-        server.ehlo()
+    with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT, timeout=15) as server:
         server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
         server.sendmail(settings.SMTP_USER, [to_email], msg.as_string())
 
