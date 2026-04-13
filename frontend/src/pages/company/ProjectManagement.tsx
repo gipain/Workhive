@@ -121,8 +121,18 @@ export default function ProjectManagement() {
             <span className="flex items-center gap-1.5"><Users size={14} /> макс. {project.max_applicants}</span>
           </div>
         </div>
-        <Badge variant={project.status === 'open' ? 'success' : 'warning'} className="text-sm">
-          {project.status === 'open' ? 'Відкритий' : project.status === 'in_progress' ? 'В роботі' : project.status}
+        <Badge
+          variant={
+            project.status === 'open' ? 'success' :
+            project.status === 'completed' ? 'default' :
+            project.status === 'cancelled' ? 'danger' : 'warning'
+          }
+          className="text-sm"
+        >
+          {project.status === 'open' ? 'Відкритий' :
+           project.status === 'in_progress' ? 'В роботі' :
+           project.status === 'completed' ? 'Завершено' :
+           project.status === 'cancelled' ? 'Скасовано' : project.status}
         </Badge>
       </div>
 
