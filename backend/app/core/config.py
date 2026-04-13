@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     BREVO_API_KEY: str = ""
     BREVO_FROM_EMAIL: str = "noreply@workhive.com"
 
+    # Mailjet
+    MAILJET_API_KEY: str = ""
+    MAILJET_SECRET_KEY: str = ""
+    MAILJET_FROM_EMAIL: str = "noreply@workhive.com"
+
     # Resend
     RESEND_API_KEY: str = ""
     RESEND_FROM_EMAIL: str = "WorkHive <onboarding@resend.dev>"

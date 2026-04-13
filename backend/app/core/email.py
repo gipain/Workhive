@@ -1,7 +1,7 @@
 """
-Email sending via Brevo (Sendinblue) HTTP API (works on Railway — uses HTTPS, no SMTP).
-Free tier: 300 emails/day, sends to any recipient, no credit card needed.
-Falls back to logging the reset link if BREVO_API_KEY is not configured.
+Email sending via Mailjet v3.1 HTTP API (works on Railway — uses HTTPS, no SMTP).
+Free tier: 200 emails/day, sends to any recipient, no credit card needed.
+Falls back to logging the reset link if MAILJET_API_KEY is not configured.
 """
 import logging
 
@@ -11,24 +11,26 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-_BREVO_URL = "https://api.brevo.com/v3/smtp/email"
+_MAILJET_URL = "https://api.mailjet.com/v3.1/send"
 
 
 def _email_configured() -> bool:
-    return bool(settings.BREVO_API_KEY)
+    return bool(settings.MAILJET_API_KEY and settings.MAILJET_SECRET_KEY)
 
 
 def _send_email(to_email: str, subject: str, html: str) -> None:
     payload = {
-        "sender": {"email": settings.BREVO_FROM_EMAIL, "name": "WorkHive"},
-        "to": [{"email": to_email}],
-        "subject": subject,
-        "htmlContent": html,
+        "Messages": [{
+            "From": {"Email": settings.MAILJET_FROM_EMAIL, "Name": "WorkHive"},
+            "To": [{"Email": to_email}],
+            "Subject": subject,
+            "HTMLPart": html,
+        }]
     }
     resp = httpx.post(
-        _BREVO_URL,
+        _MAILJET_URL,
         json=payload,
-        headers={"api-key": settings.BREVO_API_KEY},
+        auth=(settings.MAILJET_API_KEY, settings.MAILJET_SECRET_KEY),
         timeout=15,
     )
     resp.raise_for_status()
@@ -68,7 +70,7 @@ def send_password_reset_email(to_email: str, reset_token: str) -> None:
     """
 
     if not _email_configured():
-        logger.warning("BREVO_API_KEY not configured — skipping email send")
+        logger.warning("MAILJET_API_KEY/SECRET_KEY not configured — skipping email send")
         logger.warning("RESET LINK (use this directly): %s", reset_url)
         return
 
