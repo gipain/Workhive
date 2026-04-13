@@ -1,29 +1,39 @@
 """
-Email sending via Resend (https://resend.com).
-Falls back silently if RESEND_API_KEY is not configured.
+Email sending via Gmail SMTP (smtplib, no external library needed).
+Falls back to logging the reset link if SMTP is not configured.
 """
 import logging
-
-import resend
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 
-def _configured() -> bool:
-    return bool(settings.RESEND_API_KEY)
+def _smtp_configured() -> bool:
+    return bool(settings.SMTP_USER and settings.SMTP_PASSWORD)
+
+
+def _send_via_smtp(to_email: str, subject: str, html: str) -> None:
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = f"{settings.SMTP_FROM_NAME} <{settings.SMTP_USER}>"
+    msg["To"] = to_email
+    msg.attach(MIMEText(html, "html", "utf-8"))
+
+    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=15) as server:
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
+        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+        server.sendmail(settings.SMTP_USER, [to_email], msg.as_string())
 
 
 def send_password_reset_email(to_email: str, reset_token: str) -> None:
     """Send a password-reset email containing a link with the token."""
-    if not _configured():
-        logger.warning("RESEND_API_KEY not set — skipping password reset email")
-        return
-
     reset_url = f"{settings.FRONTEND_URL}/reset-password?token={reset_token}"
-
-    resend.api_key = settings.RESEND_API_KEY
 
     html = f"""
     <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; background: #ffffff;">
@@ -54,15 +64,14 @@ def send_password_reset_email(to_email: str, reset_token: str) -> None:
     </div>
     """
 
+    if not _smtp_configured():
+        logger.warning("SMTP not configured — skipping email send")
+        logger.warning("RESET LINK (use this directly): %s", reset_url)
+        return
+
     try:
-        resend.Emails.send({
-            "from": settings.RESEND_FROM_EMAIL,
-            "to": [to_email],
-            "subject": "WorkHive — скидання пароля",
-            "html": html,
-        })
+        _send_via_smtp(to_email, "WorkHive — скидання пароля", html)
         logger.info("Password reset email sent to %s", to_email)
     except Exception as exc:
         logger.error("Failed to send reset email to %s: %s", to_email, exc)
-        # Fallback: log the reset URL so it can be used directly from server logs
-        logger.warning("RESET LINK (use this if email failed): %s", reset_url)
+        logger.warning("RESET LINK (use this directly): %s", reset_url)

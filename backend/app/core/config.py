@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     RESEND_API_KEY: str = ""
     RESEND_FROM_EMAIL: str = "WorkHive <onboarding@lpnu.ua>"
 
+    # Gmail SMTP
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_NAME: str = "WorkHive"
+
     # App
     APP_NAME: str = "WorkHive"
     APP_URL: str = "http://localhost:8000"
