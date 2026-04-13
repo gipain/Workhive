@@ -148,54 +148,78 @@ export default function MyProjects() {
 
             return (
               <Card key={a.id}>
-                <div
-                  className="flex items-start justify-between gap-4 flex-wrap cursor-pointer px-6 pt-5 pb-2"
-                  onClick={() => toggleExpand(a.id)}
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h2 className="font-bold text-slate-900 text-lg">{project?.title || 'Проєкт'}</h2>
-                      <Badge variant={
-                        project?.status === 'completed' ? 'success' :
-                        project?.status === 'in_progress' ? 'warning' : 'default'
-                      }>
-                        {statusLabel[project?.status || ''] || project?.status}
-                      </Badge>
-                      {certificate && (
-                        <Badge variant="success" className="gap-1">
-                          <Award size={11} /> Сертифікат
+                {/* ── Header row - always visible ─────────────────────── */}
+                <div className="flex items-stretch gap-0">
+                  {/* Left color strip */}
+                  <div className={`w-1 rounded-l-2xl flex-shrink-0 ${
+                    project?.status === 'completed' ? 'bg-emerald-400' :
+                    project?.status === 'in_progress' ? 'bg-amber-400' : 'bg-indigo-400'
+                  }`} />
+
+                  {/* Main header content */}
+                  <div
+                    className="flex-1 flex items-center justify-between gap-3 px-5 py-4 cursor-pointer min-w-0"
+                    onClick={() => toggleExpand(a.id)}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="font-bold text-slate-900">{project?.title || 'Проєкт'}</h2>
+                        <Badge variant={
+                          project?.status === 'completed' ? 'success' :
+                          project?.status === 'in_progress' ? 'warning' : 'default'
+                        }>
+                          {statusLabel[project?.status || ''] || project?.status}
                         </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-slate-400 mt-1 flex-wrap">
-                      <span>{project?.company?.company_name}</span>
-                      {project?.deadline && (
-                        <span className="flex items-center gap-1">
-                          <Calendar size={11} /> до {formatDate(project.deadline)}
-                        </span>
-                      )}
-                    </div>
-                    {project?.skills && project.skills.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {project.skills.map((s) => <SkillTag key={s.id} name={s.name} />)}
+                        {certificate && (
+                          <Badge variant="success" className="gap-1">
+                            <Award size={10} /> Сертифікат
+                          </Badge>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {latestSub && (
-                      <Badge variant={
-                        latestSub.status === 'approved' ? 'success' :
-                        latestSub.status === 'changes_requested' ? 'warning' : 'default'
-                      }>
-                        {subStatusLabel[latestSub.status]}
-                      </Badge>
-                    )}
-                    {isExpanded ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+                      <div className="flex items-center gap-3 text-xs text-slate-400 mt-0.5 flex-wrap">
+                        {project?.company?.company_name && <span>{project.company.company_name}</span>}
+                        {project?.deadline && (
+                          <span className="flex items-center gap-1">
+                            <Calendar size={10} /> до {formatDate(project.deadline)}
+                          </span>
+                        )}
+                        {latestSub && (
+                          <span className={
+                            latestSub.status === 'approved' ? 'text-emerald-500 font-medium' :
+                            latestSub.status === 'changes_requested' ? 'text-amber-500 font-medium' :
+                            'text-slate-400'
+                          }>
+                            · {subStatusLabel[latestSub.status]}
+                          </span>
+                        )}
+                      </div>
+                      {project?.skills && project.skills.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {project.skills.map((s) => <SkillTag key={s.id} name={s.name} />)}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right: submit button + chevron */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {canSubmit && (
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <Button size="sm" onClick={() => openSubmit(a.project_id)}>
+                            <Upload size={12} /> Здати
+                          </Button>
+                        </div>
+                      )}
+                      {isExpanded
+                        ? <ChevronUp size={16} className="text-slate-400" />
+                        : <ChevronDown size={16} className="text-slate-400" />
+                      }
+                    </div>
                   </div>
                 </div>
 
+                {/* ── Expanded content ──────────────────────────────────── */}
                 {isExpanded && (
-                  <CardContent className="pt-0 space-y-5">
+                  <CardContent className="border-t border-slate-100 space-y-4">
                     {/* Project description */}
                     {project?.description && (
                       <p className="text-sm text-slate-600">{project.description}</p>
@@ -221,7 +245,7 @@ export default function MyProjects() {
                       </div>
                     )}
 
-                    {/* Rating block — shown if project completed */}
+                    {/* Waiting for review block */}
                     {hasApproved && !certificate && (
                       <div className="bg-amber-50 border border-amber-200/60 rounded-xl p-4 text-sm text-amber-800">
                         <div className="flex items-center gap-2 font-semibold mb-1">
@@ -231,19 +255,10 @@ export default function MyProjects() {
                       </div>
                     )}
 
-                    {/* Submit work button */}
-                    {canSubmit && (
-                      <div className="flex justify-end">
-                        <Button onClick={() => openSubmit(a.project_id)}>
-                          <Upload size={14} /> Здати роботу
-                        </Button>
-                      </div>
-                    )}
-
                     {/* Submissions history */}
                     {submissions.length > 0 && (
-                      <div className="space-y-3">
-                        <h3 className="text-sm font-bold text-slate-700">Здачі ({submissions.length})</h3>
+                      <div className="space-y-2">
+                        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide">Здачі ({submissions.length})</h3>
                         {submissions.map((s) => (
                           <div key={s.id} className="border border-slate-100 rounded-xl p-4 space-y-2">
                             <div className="flex items-center justify-between gap-2">
@@ -273,6 +288,11 @@ export default function MyProjects() {
                           </div>
                         ))}
                       </div>
+                    )}
+
+                    {/* No submissions yet */}
+                    {submissions.length === 0 && (
+                      <p className="text-sm text-slate-400 text-center py-2">Ще немає здач — натисніть «Здати», щоб надіслати роботу.</p>
                     )}
                   </CardContent>
                 )}
