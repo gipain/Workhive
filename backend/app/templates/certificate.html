@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            width: 297mm;
+            height: 210mm;
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #1a1a2e;
+        }
+        .certificate {
+            width: 100%;
+            height: 100%;
+            padding: 20mm;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .inner {
+            background: white;
+            border-radius: 16px;
+            padding: 30mm 40mm;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .border-accent {
+            position: absolute;
+            top: 8mm;
+            left: 8mm;
+            right: 8mm;
+            bottom: 8mm;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            pointer-events: none;
+        }
+        .logo {
+            font-size: 28pt;
+            font-weight: 800;
+            color: #667eea;
+            letter-spacing: 4px;
+            margin-bottom: 4mm;
+        }
+        .logo span {
+            color: #764ba2;
+        }
+        .subtitle {
+            font-size: 11pt;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            margin-bottom: 8mm;
+        }
+        .line {
+            width: 60mm;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #667eea, transparent);
+            margin: 4mm 0;
+        }
+        .cert-title {
+            font-size: 22pt;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            color: #333;
+            margin: 6mm 0;
+        }
+        .presented-to {
+            font-size: 10pt;
+            color: #999;
+            margin-bottom: 3mm;
+        }
+        .student-name {
+            font-size: 26pt;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 6mm;
+        }
+        .description {
+            font-size: 11pt;
+            color: #555;
+            text-align: center;
+            line-height: 1.6;
+            max-width: 180mm;
+        }
+        .project-name {
+            font-weight: 700;
+            color: #667eea;
+        }
+        .company-name {
+            font-weight: 600;
+            color: #764ba2;
+        }
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 10mm;
+            align-items: flex-end;
+        }
+        .footer-item {
+            text-align: center;
+            font-size: 9pt;
+            color: #888;
+        }
+        .footer-item .value {
+            font-size: 10pt;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 2mm;
+        }
+        .cert-id {
+            font-size: 8pt;
+            color: #bbb;
+            position: absolute;
+            bottom: 12mm;
+            right: 15mm;
+        }
+    </style>
+</head>
+<body>
+    <div class="certificate">
+        <div class="inner">
+            <div class="border-accent"></div>
+
+            <div style="text-align: center;">
+                <div class="logo">WORK<span>HIVE</span></div>
+                <div class="subtitle">Практика для кожного</div>
+            </div>
+
+            <div class="line"></div>
+
+            <div class="cert-title">Сертифікат</div>
+
+            <div class="presented-to">Цим підтверджується, що</div>
+            <div class="student-name">{{ student_name }}</div>
+
+            <div class="description">
+                успішно виконав(ла) проєкт
+                <span class="project-name">«{{ project_title }}»</span><br>
+                за участю компанії
+                <span class="company-name">{{ company_name }}</span>
+                на платформі WorkHive
+            </div>
+
+            <div class="line"></div>
+
+            <div class="footer">
+                <div class="footer-item">
+                    <div class="value">{{ issue_date }}</div>
+                    Дата видачі
+                </div>
+                <div class="footer-item">
+                    <div class="value">{{ company_name }}</div>
+                    Компанія
+                </div>
+                <div class="footer-item">
+                    <div class="value">WorkHive</div>
+                    Платформа
+                </div>
+            </div>
+
+            <div class="cert-id">ID: {{ certificate_id }}</div>
+        </div>
+    </div>
+</body>
+</html>

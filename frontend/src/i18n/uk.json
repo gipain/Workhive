@@ -1,0 +1,51 @@
+{
+  "app_name": "WorkHive",
+  "tagline": "Практика для кожного — досвід для майбутнього",
+  "nav": {
+    "home": "Головна",
+    "projects": "Проєкти",
+    "students": "Студенти",
+    "profile": "Профіль",
+    "dashboard": "Дашборд",
+    "notifications": "Сповіщення",
+    "logout": "Вийти",
+    "login": "Увійти",
+    "register": "Реєстрація"
+  },
+  "auth": {
+    "login_title": "Вхід до WorkHive",
+    "register_title": "Реєстрація",
+    "email": "Email",
+    "password": "Пароль",
+    "login_btn": "Увійти",
+    "register_btn": "Зареєструватися",
+    "no_account": "Немає акаунту?",
+    "has_account": "Вже є акаунт?",
+    "role_student": "Студент",
+    "role_company": "Компанія",
+    "first_name": "Ім'я",
+    "last_name": "Прізвище",
+    "company_name": "Назва компанії"
+  },
+  "projects": {
+    "browse": "Знайти проєкт",
+    "create": "Створити проєкт",
+    "my_projects": "Мої проєкти",
+    "title": "Назва",
+    "description": "Опис",
+    "deadline": "Дедлайн",
+    "skills": "Навички",
+    "apply": "Подати заявку",
+    "status": "Статус"
+  },
+  "common": {
+    "save": "Зберегти",
+    "cancel": "Скасувати",
+    "delete": "Видалити",
+    "edit": "Редагувати",
+    "search": "Пошук",
+    "loading": "Завантаження...",
+    "no_data": "Даних немає",
+    "error": "Помилка"
+  }
+}

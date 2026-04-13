@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: workhive
+      POSTGRES_USER: workhive
+      POSTGRES_PASSWORD: workhive_secret
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U workhive"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://workhive:workhive_secret@db:5432/workhive
+      SECRET_KEY: change-me-in-production-please-use-strong-key
+      FRONTEND_URL: http://localhost:3000
+      UPLOAD_DIR: /app/uploads
+      RESEND_API_KEY: re_9UnxEbot_PeG3GxMmKQNQZXAgh9t9AgRn
+      RESEND_FROM_EMAIL: "WorkHive <onboarding@resend.dev>"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend/app:/app/app
+      - uploads:/app/uploads
+    command: >
+      sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  uploads:
