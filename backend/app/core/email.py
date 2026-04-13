@@ -1,31 +1,28 @@
 """
-Email sending via Gmail SMTP (port 465, SSL).
-Falls back to logging the reset link if SMTP is not configured.
+Email sending via Resend HTTP API (works on Railway — uses HTTPS, no SMTP).
+Falls back to logging the reset link if RESEND_API_KEY is not configured.
 """
 import logging
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+
+import resend
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 
-def _smtp_configured() -> bool:
-    return bool(settings.SMTP_USER and settings.SMTP_PASSWORD)
+def _email_configured() -> bool:
+    return bool(settings.RESEND_API_KEY)
 
 
-def _send_via_smtp(to_email: str, subject: str, html: str) -> None:
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = f"{settings.SMTP_FROM_NAME} <{settings.SMTP_USER}>"
-    msg["To"] = to_email
-    msg.attach(MIMEText(html, "html", "utf-8"))
-
-    with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT, timeout=15) as server:
-        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-        server.sendmail(settings.SMTP_USER, [to_email], msg.as_string())
+def _send_email(to_email: str, subject: str, html: str) -> None:
+    resend.api_key = settings.RESEND_API_KEY
+    resend.Emails.send({
+        "from": settings.RESEND_FROM_EMAIL,
+        "to": [to_email],
+        "subject": subject,
+        "html": html,
+    })
 
 
 def send_password_reset_email(to_email: str, reset_token: str) -> None:
@@ -61,13 +58,13 @@ def send_password_reset_email(to_email: str, reset_token: str) -> None:
     </div>
     """
 
-    if not _smtp_configured():
-        logger.warning("SMTP not configured — skipping email send")
+    if not _email_configured():
+        logger.warning("RESEND_API_KEY not configured — skipping email send")
         logger.warning("RESET LINK (use this directly): %s", reset_url)
         return
 
     try:
-        _send_via_smtp(to_email, "WorkHive — скидання пароля", html)
+        _send_email(to_email, "WorkHive — скидання пароля", html)
         logger.info("Password reset email sent to %s", to_email)
     except Exception as exc:
         logger.error("Failed to send reset email to %s: %s", to_email, exc)
