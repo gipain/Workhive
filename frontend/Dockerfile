@@ -12,5 +12,5 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # Store nginx config as a template
 COPY nginx.conf /etc/nginx/conf.d/default.conf.template
 EXPOSE 80
-# At startup: substitute BACKEND_URL (and only BACKEND_URL) then launch nginx
-CMD ["/bin/sh", "-c", "envsubst '${BACKEND_URL}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+# At startup: substitute BACKEND_URL and PORT, then launch nginx
+CMD ["/bin/sh", "-c", "export PORT=${PORT:-80} && envsubst '${BACKEND_URL} ${PORT}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
