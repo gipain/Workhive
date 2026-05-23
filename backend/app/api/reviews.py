@@ -83,6 +83,7 @@ def create_review(
     )
     db.add(notification)
 
+    db.flush()  # make the new review visible to the AVG/COUNT queries below
     _update_student_rating(db, approved_submission.student_id)
 
     db.commit()
