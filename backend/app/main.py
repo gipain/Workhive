@@ -143,6 +143,18 @@ def _bootstrap_db():
                         profile.skills.append(skill_map[sname])
                 db.add(profile)
         db.commit()
+
+        # ── Recompute student stats from reviews ────────────────────────────
+        # Fixes records created before the autoflush fix in reviews.py
+        from app.models.review import Review
+        from sqlalchemy import func as sa_func
+        students = db.query(StudentProfile).all()
+        for sp in students:
+            result = db.query(sa_func.avg(Review.rating)).filter(Review.student_id == sp.id).scalar()
+            count  = db.query(Review).filter(Review.student_id == sp.id).count()
+            sp.rating_avg = round(float(result or 0), 2)
+            sp.total_completed = count
+        db.commit()
     except Exception:
         db.rollback()
         raise
