@@ -1,0 +1,51 @@
+services:
+  # ── Backend (FastAPI) ───────────────────────────────────────────────────────
+  - type: web
+    name: workhive-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false          # Set this in Render dashboard → Internal Database URL
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "30"
+      - key: REFRESH_TOKEN_EXPIRE_DAYS
+        value: "7"
+      - key: FRONTEND_URL
+        sync: false          # e.g. https://workhive-frontend.onrender.com
+      - key: APP_URL
+        sync: false          # e.g. https://workhive-backend.onrender.com
+      - key: UPLOAD_DIR
+        value: ./uploads
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        value: "WorkHive <onboarding@resend.dev>"
+
+  # ── Frontend (React + Vite) ─────────────────────────────────────────────────
+  - type: web
+    name: workhive-frontend
+    env: static
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: ./frontend/dist
+    plan: free
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false          # e.g. https://workhive-backend.onrender.com
+
+databases:
+  - name: workhive-db
+    plan: free
+    databaseName: workhive
+    user: workhive

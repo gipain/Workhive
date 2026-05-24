@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api } from '../../api/client';
+import api from '../../services/api';
 import { Search, Eye, EyeOff, ChevronLeft, ChevronRight, GraduationCap } from 'lucide-react';
 
 interface AdminStudent {

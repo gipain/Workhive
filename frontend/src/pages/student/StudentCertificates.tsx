@@ -8,18 +8,43 @@ import { PageLoader } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/shared/EmptyState';
 import { Award, Download } from 'lucide-react';
 import { formatDate } from '../../utils/helpers';
+import toast from 'react-hot-toast';
 
 export default function StudentCertificates() {
   const { user } = useAuthStore();
   const [certs, setCerts] = useState<Certificate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState<string | null>(null);
 
   useEffect(() => {
-    api.get(`/api/certificates/student/${user?.id}`)
-      .then((r) => setCerts(r.data.items || r.data))
-      .catch(() => {})
+    if (!user?.id) return;
+    api.get(`/api/certificates/student/${user.id}`)
+      .then((r) => setCerts(r.data.items ?? r.data))
+      .catch(() => toast.error('Не вдалося завантажити сертифікати'))
       .finally(() => setLoading(false));
   }, [user?.id]);
+
+  const handleDownload = async (certId: string, projectTitle: string) => {
+    setDownloading(certId);
+    try {
+      const response = await api.get(`/api/certificates/${certId}/download`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      const safe = projectTitle.replace(/[^a-zA-Z0-9а-яА-ЯіІїЇєЄ]/g, '_').slice(0, 40);
+      link.setAttribute('download', `workhive_certificate_${safe}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Не вдалося завантажити PDF. Спробуйте ще раз.');
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   if (loading) return <PageLoader />;
 
@@ -45,16 +70,20 @@ export default function StudentCertificates() {
                     <Award size={20} className="text-white" />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-bold text-slate-900 truncate">{c.project?.title || 'Проєкт'}</p>
+                    <p className="font-bold text-slate-900 truncate">{c.project?.title ?? 'Проєкт'}</p>
                     <p className="text-xs text-slate-500">{c.project?.company?.company_name}</p>
                   </div>
                 </div>
                 <p className="text-xs text-slate-400">Видано {formatDate(c.issued_at)}</p>
-                <a href={`/api/certificates/${c.id}/download`} target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" variant="outline" className="w-full">
-                    <Download size={14} /> Завантажити PDF
-                  </Button>
-                </a>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full"
+                  isLoading={downloading === c.id}
+                  onClick={() => handleDownload(c.id, c.project?.title ?? 'certificate')}
+                >
+                  <Download size={14} /> Завантажити PDF
+                </Button>
               </CardContent>
             </Card>
           ))}

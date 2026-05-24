@@ -10,7 +10,7 @@ import { Modal } from '../../components/ui/Modal';
 import { PageLoader } from '../../components/ui/Skeleton';
 import { SkillTag } from '../../components/shared/SkillTag';
 import { EmptyState } from '../../components/shared/EmptyState';
-import { ArrowLeft, Calendar, Users, CheckCircle, XCircle, Eye, GraduationCap, Star, Briefcase, ExternalLink, Flag } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, CheckCircle, XCircle, Eye, GraduationCap, Star, Briefcase, ExternalLink, Flag, Award, Download } from 'lucide-react';
 import { formatDate, formatDateTime } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 import { ComplaintModal } from '../../components/shared/ComplaintModal';
@@ -33,13 +33,18 @@ export default function ProjectManagement() {
   // Complaint
   const [complaintTarget, setComplaintTarget] = useState<{ userId: string; name: string } | null>(null);
 
+  // Certificates
+  const [downloadingCert, setDownloadingCert] = useState<string | null>(null);
+  const [projectCerts, setProjectCerts] = useState<Record<string, string>>({}); // student_id -> cert_id
+
   useEffect(() => {
     const load = async () => {
       try {
-        const [projRes, appsRes, subsRes] = await Promise.allSettled([
+        const [projRes, appsRes, subsRes, certsRes] = await Promise.allSettled([
           api.get(`/api/projects/${id}`),
           api.get(`/api/applications/project/${id}`),
           api.get(`/api/submissions?project_id=${id}`),
+          api.get(`/api/certificates/project/${id}`),
         ]);
         if (projRes.status === 'fulfilled') {
           setProject(projRes.value.data);
@@ -52,12 +57,40 @@ export default function ProjectManagement() {
         if (subsRes.status === 'fulfilled') {
           setSubmissions(subsRes.value.data.items || subsRes.value.data);
         }
+        if (certsRes.status === 'fulfilled') {
+          const certMap: Record<string, string> = {};
+          const items = certsRes.value.data.items ?? certsRes.value.data ?? [];
+          for (const cert of items) {
+            certMap[cert.student_id] = cert.id;
+          }
+          setProjectCerts(certMap);
+        }
       } finally {
         setLoading(false);
       }
     };
     load();
   }, [id]);
+
+  const handleDownloadCert = async (certId: string, studentName: string) => {
+    setDownloadingCert(certId);
+    try {
+      const response = await api.get(`/api/certificates/${certId}/download`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      const safe = studentName.replace(/\s+/g, '_');
+      link.setAttribute('download', `workhive_certificate_${safe}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Не вдалося завантажити сертифікат');
+    } finally {
+      setDownloadingCert(null);
+    }
+  };
 
   const handleApplication = async (appId: string, action: 'accept' | 'reject') => {
     setActing(true);
@@ -95,6 +128,16 @@ export default function ProjectManagement() {
             comment: feedback || 'Гарна робота!',
           });
           toast.success('Відгук створено, сертифікат генерується');
+          // Refresh certs after backend background task completes
+          setTimeout(async () => {
+            try {
+              const certsRes = await api.get(`/api/certificates/project/${id}`);
+              const certMap: Record<string, string> = {};
+              const items = certsRes.data.items ?? certsRes.data ?? [];
+              for (const cert of items) certMap[cert.student_id] = cert.id;
+              setProjectCerts(certMap);
+            } catch { /* silent */ }
+          }, 3000);
         } catch {
           // review may already exist
         }
@@ -282,15 +325,32 @@ export default function ProjectManagement() {
                       </a>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     {s.status === 'pending_review' ? (
                       <Button size="sm" onClick={() => { setSelectedSubmission(s); setFeedback(''); setRating(5); setReviewModal(true); }}>
                         <Eye size={14} /> Рецензувати
                       </Button>
                     ) : (
-                      <Badge variant={s.status === 'approved' ? 'success' : 'warning'}>
-                        {s.status === 'approved' ? 'Прийнято' : 'Потребує змін'}
-                      </Badge>
+                      <>
+                        <Badge variant={s.status === 'approved' ? 'success' : 'warning'}>
+                          {s.status === 'approved' ? 'Прийнято' : 'Потребує змін'}
+                        </Badge>
+                        {s.status === 'approved' && projectCerts[s.student_id] && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            isLoading={downloadingCert === projectCerts[s.student_id]}
+                            onClick={() => handleDownloadCert(
+                              projectCerts[s.student_id],
+                              `${s.student?.first_name ?? ''}_${s.student?.last_name ?? ''}`,
+                            )}
+                          >
+                            <Award size={13} />
+                            <Download size={13} />
+                            Сертифікат
+                          </Button>
+                        )}
+                      </>
                     )}
                   </div>
                 </CardContent>
