@@ -44,6 +44,9 @@ export function Header() {
         return [
           { to: `${base}/dashboard`, label: 'Дашборд' },
           { to: `${base}/users`, label: 'Користувачі' },
+          { to: `${base}/students`, label: 'Студенти' },
+          { to: `${base}/companies`, label: 'Компанії' },
+          { to: `${base}/projects`, label: 'Проєкти' },
           { to: `${base}/complaints`, label: 'Скарги' },
         ];
       default:

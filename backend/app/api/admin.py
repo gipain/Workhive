@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Query
 from sqlalchemy import func as sa_func
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from app.api.deps import CurrentUser, DB
 from app.core.exceptions import ForbiddenError, NotFoundError
@@ -12,6 +12,9 @@ from app.models.project import Project
 from app.models.complaint import Complaint, ComplaintStatus
 from app.models.notification import Notification
 from app.schemas.user import UserResponse, UserWithProfile
+from app.schemas.student import StudentProfileResponse
+from app.schemas.company import CompanyProfileResponse
+from app.schemas.project import ProjectResponse, ProjectListResponse
 from app.schemas.complaint import ComplaintCreate, ComplaintUpdate, ComplaintResponse, ComplaintListResponse
 
 router = APIRouter(prefix="/admin", tags=["Адміністрування"])
@@ -150,3 +153,178 @@ def update_complaint(complaint_id: uuid.UUID, data: ComplaintUpdate, current_use
     db.commit()
     db.refresh(complaint)
     return complaint
+
+
+# ─── Admin: Student profiles ────────────────────────────────────────────────
+
+class AdminStudentItem(StudentProfileResponse):
+    email: str
+    is_active: bool
+    hashed_password: str
+
+    model_config = {"from_attributes": True}
+
+
+@router.get("/students")
+def list_students(
+    current_user: CurrentUser,
+    db: DB,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    search: str | None = None,
+):
+    _require_admin(current_user)
+
+    query = (
+        db.query(StudentProfile)
+        .join(User, User.id == StudentProfile.user_id)
+        .options(selectinload(StudentProfile.skills), joinedload(StudentProfile.user))
+    )
+    if search:
+        query = query.filter(
+            User.email.ilike(f"%{search}%")
+            | StudentProfile.first_name.ilike(f"%{search}%")
+            | StudentProfile.last_name.ilike(f"%{search}%")
+        )
+
+    total = query.count()
+    profiles = query.order_by(StudentProfile.created_at.desc()).offset((page - 1) * size).limit(size).all()
+
+    items = []
+    for p in profiles:
+        d = {
+            **StudentProfileResponse.model_validate(p).model_dump(),
+            "email": p.user.email,
+            "is_active": p.user.is_active,
+            "hashed_password": p.user.hashed_password,
+        }
+        items.append(d)
+
+    return {"items": items, "total": total, "page": page, "size": size}
+
+
+@router.get("/students/{student_id}")
+def get_student(student_id: uuid.UUID, current_user: CurrentUser, db: DB):
+    _require_admin(current_user)
+
+    profile = (
+        db.query(StudentProfile)
+        .filter(StudentProfile.user_id == student_id)
+        .options(selectinload(StudentProfile.skills), joinedload(StudentProfile.user))
+        .first()
+    )
+    if not profile:
+        profile = (
+            db.query(StudentProfile)
+            .filter(StudentProfile.id == student_id)
+            .options(selectinload(StudentProfile.skills), joinedload(StudentProfile.user))
+            .first()
+        )
+    if not profile:
+        raise NotFoundError("Профіль студента не знайдено")
+
+    return {
+        **StudentProfileResponse.model_validate(profile).model_dump(),
+        "email": profile.user.email,
+        "is_active": profile.user.is_active,
+        "hashed_password": profile.user.hashed_password,
+    }
+
+
+# ─── Admin: Company profiles ────────────────────────────────────────────────
+
+@router.get("/companies")
+def list_companies(
+    current_user: CurrentUser,
+    db: DB,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    search: str | None = None,
+):
+    _require_admin(current_user)
+
+    query = (
+        db.query(CompanyProfile)
+        .join(User, User.id == CompanyProfile.user_id)
+        .options(joinedload(CompanyProfile.user))
+    )
+    if search:
+        query = query.filter(
+            User.email.ilike(f"%{search}%")
+            | CompanyProfile.company_name.ilike(f"%{search}%")
+        )
+
+    total = query.count()
+    profiles = query.order_by(CompanyProfile.created_at.desc()).offset((page - 1) * size).limit(size).all()
+
+    items = []
+    for p in profiles:
+        d = {
+            **CompanyProfileResponse.model_validate(p).model_dump(),
+            "email": p.user.email,
+            "is_active": p.user.is_active,
+            "hashed_password": p.user.hashed_password,
+        }
+        items.append(d)
+
+    return {"items": items, "total": total, "page": page, "size": size}
+
+
+@router.get("/companies/{company_id}")
+def get_company(company_id: uuid.UUID, current_user: CurrentUser, db: DB):
+    _require_admin(current_user)
+
+    profile = (
+        db.query(CompanyProfile)
+        .filter(CompanyProfile.user_id == company_id)
+        .options(joinedload(CompanyProfile.user))
+        .first()
+    )
+    if not profile:
+        profile = (
+            db.query(CompanyProfile)
+            .filter(CompanyProfile.id == company_id)
+            .options(joinedload(CompanyProfile.user))
+            .first()
+        )
+    if not profile:
+        raise NotFoundError("Профіль компанії не знайдено")
+
+    return {
+        **CompanyProfileResponse.model_validate(profile).model_dump(),
+        "email": profile.user.email,
+        "is_active": profile.user.is_active,
+        "hashed_password": profile.user.hashed_password,
+    }
+
+
+# ─── Admin: Projects ────────────────────────────────────────────────────────
+
+@router.get("/projects", response_model=ProjectListResponse)
+def list_projects(
+    current_user: CurrentUser,
+    db: DB,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    search: str | None = None,
+    status: str | None = None,
+):
+    _require_admin(current_user)
+
+    from app.models.skill import Skill
+    query = (
+        db.query(Project)
+        .options(
+            selectinload(Project.skills),
+            joinedload(Project.company),
+        )
+    )
+    if search:
+        query = query.filter(Project.title.ilike(f"%{search}%"))
+    if status:
+        query = query.filter(Project.status == status)
+
+    total = query.count()
+    projects = query.order_by(Project.created_at.desc()).offset((page - 1) * size).limit(size).all()
+
+    return ProjectListResponse(items=projects, total=total, page=page, size=size)

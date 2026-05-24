@@ -37,6 +37,9 @@ const CompanyProfilePage = lazy(() => import('./pages/company/CompanyProfilePage
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
 const AdminComplaints = lazy(() => import('./pages/admin/AdminComplaints'));
+const AdminStudents = lazy(() => import('./pages/admin/AdminStudents'));
+const AdminCompanies = lazy(() => import('./pages/admin/AdminCompanies'));
+const AdminProjects = lazy(() => import('./pages/admin/AdminProjects'));
 
 // Shared
 const NotificationsPage = lazy(() => import('./pages/shared/NotificationsPage'));
@@ -95,6 +98,9 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/students" element={<AdminStudents />} />
+            <Route path="/admin/companies" element={<AdminCompanies />} />
+            <Route path="/admin/projects" element={<AdminProjects />} />
             <Route path="/admin/complaints" element={<AdminComplaints />} />
             <Route path="/admin/notifications" element={<NotificationsPage />} />
           </Route>
