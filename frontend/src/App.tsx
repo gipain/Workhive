@@ -29,6 +29,7 @@ const StudentMyProjects = lazy(() => import('./pages/student/MyProjects'));
 const CompanyDashboard = lazy(() => import('./pages/company/CompanyDashboard'));
 const MyProjects = lazy(() => import('./pages/company/MyProjects'));
 const CreateProject = lazy(() => import('./pages/company/CreateProject'));
+const EditProject = lazy(() => import('./pages/company/EditProject'));
 const ProjectManagement = lazy(() => import('./pages/company/ProjectManagement'));
 const BrowseStudents = lazy(() => import('./pages/company/BrowseStudents'));
 const CompanyProfilePage = lazy(() => import('./pages/company/CompanyProfilePage'));
@@ -88,6 +89,7 @@ function App() {
             <Route path="/company/dashboard" element={<CompanyDashboard />} />
             <Route path="/company/projects" element={<MyProjects />} />
             <Route path="/company/projects/new" element={<CreateProject />} />
+            <Route path="/company/projects/:id/edit" element={<EditProject />} />
             <Route path="/company/projects/:id" element={<ProjectManagement />} />
             <Route path="/company/students" element={<BrowseStudents />} />
             <Route path="/company/profile" element={<CompanyProfilePage />} />

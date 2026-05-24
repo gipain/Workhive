@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import type { Project, Application, Submission } from '../../types';
 import { Card, CardContent } from '../../components/ui/Card';
@@ -10,7 +10,7 @@ import { Modal } from '../../components/ui/Modal';
 import { PageLoader } from '../../components/ui/Skeleton';
 import { SkillTag } from '../../components/shared/SkillTag';
 import { EmptyState } from '../../components/shared/EmptyState';
-import { ArrowLeft, Calendar, Users, CheckCircle, XCircle, Eye, GraduationCap, Star, Briefcase, ExternalLink, Flag, Award, Download, Globe, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, CheckCircle, XCircle, Eye, GraduationCap, Star, Briefcase, ExternalLink, Flag, Award, Download, Globe, Trash2, Pencil } from 'lucide-react';
 import { formatDate, formatDateTime } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 import { ComplaintModal } from '../../components/shared/ComplaintModal';
@@ -18,6 +18,7 @@ import { getApiErrorMessage } from '../../utils/apiError';
 
 export default function ProjectManagement() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [project, setProject] = useState<Project | null>(null);
   const [applications, setApplications] = useState<Application[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -212,6 +213,9 @@ export default function ProjectManagement() {
             <p className="text-xs text-amber-600">Опублікуйте проєкт, щоб студенти могли подавати заявки.</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <Button size="sm" variant="outline" onClick={() => navigate(`/company/projects/${id}/edit`)}>
+              <Pencil size={13} /> Редагувати
+            </Button>
             <Button size="sm" isLoading={projectActing} onClick={handlePublish}>
               <Globe size={13} /> Опублікувати
             </Button>
@@ -232,6 +236,11 @@ export default function ProjectManagement() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {!project.is_draft && (project.status === 'open' || project.status === 'in_progress') && (
+            <Button size="sm" variant="outline" onClick={() => navigate(`/company/projects/${id}/edit`)}>
+              <Pencil size={13} /> Редагувати
+            </Button>
+          )}
           {!project.is_draft && (project.status === 'open' || project.status === 'in_progress') && (
             <Button size="sm" variant="outline" isLoading={projectActing} onClick={handleCancelProject}>
               <XCircle size={13} /> Скасувати

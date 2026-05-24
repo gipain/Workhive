@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { Select } from '../../components/ui/Select';
 import { PageLoader } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/shared/EmptyState';
-import { Plus, Calendar, Globe, Trash2, XCircle, FileEdit } from 'lucide-react';
+import { Plus, Calendar, Globe, Trash2, XCircle, FileEdit, Pencil } from 'lucide-react';
 import { formatDate } from '../../utils/helpers';
 import { getApiErrorMessage } from '../../utils/apiError';
 import toast from 'react-hot-toast';
@@ -151,6 +151,15 @@ export default function MyProjects() {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.preventDefault()}>
+                    {/* Edit button for drafts and open projects */}
+                    {(p.is_draft || p.status === 'open' || p.status === 'in_progress') && (
+                      <Link to={`/company/projects/${p.id}/edit`} onClick={(e) => e.stopPropagation()}>
+                        <Button size="sm" variant="outline">
+                          <Pencil size={13} /> Редагувати
+                        </Button>
+                      </Link>
+                    )}
+
                     {/* Publish button for drafts */}
                     {p.is_draft && (
                       <Button
