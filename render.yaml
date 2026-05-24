@@ -1,34 +1,8 @@
-services:
-  # ── Backend (FastAPI + WeasyPrint) ─────────────────────────────────────────
-  - type: web
-    name: workhive-backend
-    env: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
-    healthCheckPath: /api/health
-    envVars:
-      - key: DATABASE_URL
-        sync: false          # paste Internal Database URL from the workhive-db service
-      - key: SECRET_KEY
-        generateValue: true
-      - key: ALGORITHM
-        value: HS256
-      - key: ACCESS_TOKEN_EXPIRE_MINUTES
-        value: "30"
-      - key: REFRESH_TOKEN_EXPIRE_DAYS
-        value: "7"
-      - key: FRONTEND_URL
-        sync: false          # e.g. https://workhive-frontend.onrender.com
-      - key: APP_URL
-        sync: false          # e.g. https://workhive-backend.onrender.com
-      - key: UPLOAD_DIR
-        value: ./uploads
-      - key: RESEND_API_KEY
-        sync: false
-      - key: RESEND_FROM_EMAIL
-        value: "WorkHive <onboarding@resend.dev>"
+# render.yaml — тільки для FRONTEND (Static Site — безкоштовно)
+# Backend деплоїться на Railway.app (railway.toml)
+# БД — на Neon.tech або Railway PostgreSQL
 
-  # ── Frontend (React + Vite static site) ────────────────────────────────────
+services:
   - type: web
     name: workhive-frontend
     env: static
@@ -40,10 +14,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        sync: false          # e.g. https://workhive-backend.onrender.com
-
-databases:
-  - name: workhive-db
-    plan: free
-    databaseName: workhive
-    user: workhive
+        sync: false   # вставити URL бекенду з Railway, напр. https://workhive-backend.up.railway.app
