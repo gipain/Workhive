@@ -1,15 +1,14 @@
 services:
-  # ── Backend (FastAPI) ───────────────────────────────────────────────────────
+  # ── Backend (FastAPI + WeasyPrint) ─────────────────────────────────────────
   - type: web
     name: workhive-backend
     env: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    plan: free
     healthCheckPath: /api/health
     envVars:
       - key: DATABASE_URL
-        sync: false          # Set this in Render dashboard → Internal Database URL
+        sync: false          # paste Internal Database URL from the workhive-db service
       - key: SECRET_KEY
         generateValue: true
       - key: ALGORITHM
@@ -29,13 +28,12 @@ services:
       - key: RESEND_FROM_EMAIL
         value: "WorkHive <onboarding@resend.dev>"
 
-  # ── Frontend (React + Vite) ─────────────────────────────────────────────────
+  # ── Frontend (React + Vite static site) ────────────────────────────────────
   - type: web
     name: workhive-frontend
     env: static
     buildCommand: cd frontend && npm ci && npm run build
     staticPublishPath: ./frontend/dist
-    plan: free
     routes:
       - type: rewrite
         source: /*
