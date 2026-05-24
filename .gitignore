@@ -39,3 +39,15 @@ backend/alembic/versions/*.pyc
 
 # Logs
 *.log
+
+# Claude Code
+.claude/
+
+# Document editing scripts & working files (docx session artifacts)
+add_citations.py
+insert_chapters.py
+patch_student_stats.py
+seed_lifecycle.py
+seed_production.py
+*.txt
+!README.txt
