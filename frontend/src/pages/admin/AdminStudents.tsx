@@ -42,7 +42,7 @@ export default function AdminStudents() {
     try {
       const params = new URLSearchParams({ page: String(p), size: '15' });
       if (s) params.set('search', s);
-      const res = await api.get(`/admin/students?${params}`);
+      const res = await api.get(`/api/admin/students?${params}`);
       setData(res.data);
     } catch (e) {
       console.error(e);

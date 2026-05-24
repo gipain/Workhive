@@ -65,8 +65,15 @@ def create_project(data: ProjectCreate, current_user: CurrentUser, db: DB):
     if current_user.role != UserRole.company:
         raise ForbiddenError("Тільки компанії можуть створювати проєкти")
 
+    from app.models.user import CompanyProfile
+    company = db.query(CompanyProfile).filter(
+        CompanyProfile.user_id == current_user.id
+    ).first()
+    if not company:
+        raise ForbiddenError("Профіль компанії не знайдено")
+
     project = Project(
-        company_id=current_user.company_profile.id,
+        company_id=company.id,
         title=data.title,
         description=data.description,
         requirements=data.requirements,

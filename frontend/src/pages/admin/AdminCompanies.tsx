@@ -36,7 +36,7 @@ export default function AdminCompanies() {
     try {
       const params = new URLSearchParams({ page: String(p), size: '15' });
       if (s) params.set('search', s);
-      const res = await api.get(`/admin/companies?${params}`);
+      const res = await api.get(`/api/admin/companies?${params}`);
       setData(res.data);
     } catch (e) {
       console.error(e);

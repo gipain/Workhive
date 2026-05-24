@@ -51,7 +51,7 @@ export default function AdminProjects() {
       const params = new URLSearchParams({ page: String(p), size: '15' });
       if (s) params.set('search', s);
       if (st) params.set('status', st);
-      const res = await api.get(`/admin/projects?${params}`);
+      const res = await api.get(`/api/admin/projects?${params}`);
       setData(res.data);
     } catch (e) {
       console.error(e);
