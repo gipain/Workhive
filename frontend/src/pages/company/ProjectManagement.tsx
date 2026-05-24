@@ -14,6 +14,7 @@ import { ArrowLeft, Calendar, Users, CheckCircle, XCircle, Eye, GraduationCap, S
 import { formatDate, formatDateTime } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 import { ComplaintModal } from '../../components/shared/ComplaintModal';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 export default function ProjectManagement() {
   const { id } = useParams<{ id: string }>();
@@ -101,8 +102,7 @@ export default function ProjectManagement() {
       setApplications((prev) => prev.map((a) => a.id === appId ? { ...a, status: action === 'accept' ? 'accepted' : 'rejected' } : a));
       toast.success(action === 'accept' ? 'Заявку прийнято' : 'Заявку відхилено');
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Помилка';
-      toast.error(msg);
+      toast.error(getApiErrorMessage(err));
     } finally {
       setActing(false);
     }
@@ -145,8 +145,7 @@ export default function ProjectManagement() {
         }
       }
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Помилка';
-      toast.error(msg);
+      toast.error(getApiErrorMessage(err));
     } finally {
       setActing(false);
     }

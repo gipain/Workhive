@@ -5,6 +5,7 @@ import { TextArea } from '../ui/TextArea';
 import { Button } from '../ui/Button';
 import { AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 interface ComplaintModalProps {
   isOpen: boolean;
@@ -33,8 +34,7 @@ export function ComplaintModal({ isOpen, onClose, targetUserId, targetName }: Co
       setReason('');
       onClose();
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Помилка';
-      toast.error(msg);
+      toast.error(getApiErrorMessage(err));
     } finally {
       setLoading(false);
     }

@@ -12,6 +12,7 @@ import { EmptyState } from '../../components/shared/EmptyState';
 import { ArrowLeft, Upload } from 'lucide-react';
 import { formatDateTime } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../utils/apiError';
 import { Link } from 'react-router-dom';
 
 export default function StudentSubmissions() {
@@ -56,8 +57,7 @@ export default function StudentSubmissions() {
       setFileUrl('');
       toast.success('Роботу здано');
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Помилка';
-      toast.error(msg);
+      toast.error(getApiErrorMessage(err));
     } finally {
       setSubmitting(false);
     }

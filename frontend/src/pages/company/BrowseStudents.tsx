@@ -15,6 +15,7 @@ import { RatingStars } from '../../components/shared/RatingStars';
 import { Search, Send, GraduationCap, Flag } from 'lucide-react';
 import { useDebounce } from '../../hooks/useApi';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../utils/apiError';
 import type { Skill, Project } from '../../types';
 import { useAuthStore } from '../../store/authStore';
 import { ComplaintModal } from '../../components/shared/ComplaintModal';
@@ -94,8 +95,7 @@ export default function BrowseStudents() {
       toast.success('Запрошення надіслано');
       setInviteModal(false);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Помилка';
-      toast.error(msg);
+      toast.error(getApiErrorMessage(err));
     } finally {
       setInviting(false);
     }

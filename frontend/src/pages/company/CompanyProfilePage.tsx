@@ -8,6 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardHeader } from '../../components/ui/Card';
 import { PageLoader } from '../../components/ui/Skeleton';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 export default function CompanyProfilePage() {
   const { user, fetchUser } = useAuthStore();
@@ -44,8 +45,7 @@ export default function CompanyProfilePage() {
       await fetchUser();
       toast.success('Профіль оновлено');
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Помилка';
-      toast.error(msg);
+      toast.error(getApiErrorMessage(err));
     } finally {
       setSaving(false);
     }

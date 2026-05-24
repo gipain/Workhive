@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { formatDate, formatDateTime } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 interface ProjectEntry {
   application: Application;
@@ -111,8 +112,7 @@ export default function MyProjects() {
       setSubmitModal(false);
       toast.success('Роботу здано! Очікуйте перевірки від компанії.');
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Помилка';
-      toast.error(msg);
+      toast.error(getApiErrorMessage(err));
     } finally {
       setSubmitting(false);
     }

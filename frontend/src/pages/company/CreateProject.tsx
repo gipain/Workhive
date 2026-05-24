@@ -8,6 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardHeader } from '../../components/ui/Card';
 import { SkillTag } from '../../components/shared/SkillTag';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 export default function CreateProject() {
   const navigate = useNavigate();
@@ -28,12 +29,27 @@ export default function CreateProject() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Frontend validation to catch obvious issues before hitting the backend
+    if (title.trim().length < 3) {
+      toast.error('Назва проєкту має містити мінімум 3 символи');
+      return;
+    }
+    if (description.trim().length < 10) {
+      toast.error('Опис має містити мінімум 10 символів');
+      return;
+    }
+    if (!deadline) {
+      toast.error('Вкажіть дедлайн');
+      return;
+    }
+
     setSaving(true);
     try {
       const res = await api.post('/api/projects', {
-        title,
-        description,
-        requirements: requirements || undefined,
+        title: title.trim(),
+        description: description.trim(),
+        requirements: requirements.trim() || undefined,
         deadline,
         max_applicants: Number(maxStudents) || 5,
         skill_names: selectedSkills,
@@ -41,8 +57,7 @@ export default function CreateProject() {
       toast.success('Проєкт створено');
       navigate(`/company/projects/${res.data.id}`);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Помилка';
-      toast.error(msg);
+      toast.error(getApiErrorMessage(err));
     } finally {
       setSaving(false);
     }

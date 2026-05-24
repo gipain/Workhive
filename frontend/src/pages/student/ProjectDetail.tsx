@@ -13,6 +13,7 @@ import { SkillTag } from '../../components/shared/SkillTag';
 import { Calendar, Building2, Users, ArrowLeft, Flag } from 'lucide-react';
 import { formatDate } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../utils/apiError';
 import { ComplaintModal } from '../../components/shared/ComplaintModal';
 
 export default function ProjectDetail() {
@@ -53,8 +54,7 @@ export default function ProjectDetail() {
       setShowApplyModal(false);
       setAlreadyApplied(true);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Помилка';
-      toast.error(msg);
+      toast.error(getApiErrorMessage(err));
     } finally {
       setApplying(false);
     }

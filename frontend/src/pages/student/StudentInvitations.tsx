@@ -8,6 +8,7 @@ import { PageLoader } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/shared/EmptyState';
 import { formatDate } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 export default function StudentInvitations() {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
@@ -28,8 +29,7 @@ export default function StudentInvitations() {
       setInvitations((prev) => prev.map((inv) => inv.id === id ? { ...inv, status: action === 'accept' ? 'accepted' : 'declined' } : inv));
       toast.success(action === 'accept' ? 'Запрошення прийнято' : 'Запрошення відхилено');
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Помилка';
-      toast.error(msg);
+      toast.error(getApiErrorMessage(err));
     } finally {
       setActing(null);
     }
