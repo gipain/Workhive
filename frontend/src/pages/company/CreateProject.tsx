@@ -22,6 +22,7 @@ export default function CreateProject() {
   const [maxStudents, setMaxStudents] = useState('5');
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState('');
+  const [isDraft, setIsDraft] = useState(false);
 
   useEffect(() => {
     api.get('/api/skills').then((r) => setAllSkills(r.data)).catch(() => {});
@@ -53,8 +54,9 @@ export default function CreateProject() {
         deadline,
         max_applicants: Number(maxStudents) || 5,
         skill_names: selectedSkills,
+        is_draft: isDraft,
       });
-      toast.success('Проєкт створено');
+      toast.success(isDraft ? 'Чернетку збережено' : 'Проєкт опубліковано');
       navigate(`/company/projects/${res.data.id}`);
     } catch (err: unknown) {
       toast.error(getApiErrorMessage(err));
@@ -121,9 +123,28 @@ export default function CreateProject() {
           </CardContent>
         </Card>
 
+        {/* Draft toggle */}
+        <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={isDraft}
+              onChange={(e) => setIsDraft(e.target.checked)}
+            />
+            <div className="w-10 h-5 bg-slate-300 rounded-full peer peer-checked:bg-indigo-500 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
+          </label>
+          <div>
+            <p className="text-sm font-semibold text-slate-700">Зберегти як чернетку</p>
+            <p className="text-xs text-slate-400">Чернетка не видна студентам. Опублікуйте пізніше.</p>
+          </div>
+        </div>
+
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={() => navigate(-1)}>Скасувати</Button>
-          <Button type="submit" isLoading={saving}>Створити проєкт</Button>
+          <Button type="submit" isLoading={saving}>
+            {isDraft ? 'Зберегти чернетку' : 'Опублікувати проєкт'}
+          </Button>
         </div>
       </form>
     </div>

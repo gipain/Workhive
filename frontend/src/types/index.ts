@@ -53,6 +53,7 @@ export interface Project {
   title: string;
   description: string;
   status: 'open' | 'in_progress' | 'completed' | 'cancelled';
+  is_draft?: boolean;
   deadline?: string;
   requirements?: string;
   max_applicants: number;

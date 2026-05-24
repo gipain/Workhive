@@ -13,6 +13,7 @@ class ProjectCreate(BaseModel):
     deadline: datetime | None = None
     max_applicants: int = Field(1, ge=1, le=50)
     skill_names: list[str] = []
+    is_draft: bool = False
 
 
 class ProjectUpdate(BaseModel):
@@ -33,6 +34,7 @@ class ProjectResponse(BaseModel):
     status: str
     deadline: datetime | None = None
     max_applicants: int
+    is_draft: bool = False
     skills: list[SkillResponse] = []
     company: CompanyProfileResponse | None = None
     created_at: datetime

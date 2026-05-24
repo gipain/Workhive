@@ -10,7 +10,7 @@ import { Modal } from '../../components/ui/Modal';
 import { PageLoader } from '../../components/ui/Skeleton';
 import { SkillTag } from '../../components/shared/SkillTag';
 import { EmptyState } from '../../components/shared/EmptyState';
-import { ArrowLeft, Calendar, Users, CheckCircle, XCircle, Eye, GraduationCap, Star, Briefcase, ExternalLink, Flag, Award, Download } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, CheckCircle, XCircle, Eye, GraduationCap, Star, Briefcase, ExternalLink, Flag, Award, Download, Globe, Trash2 } from 'lucide-react';
 import { formatDate, formatDateTime } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 import { ComplaintModal } from '../../components/shared/ComplaintModal';
@@ -37,6 +37,9 @@ export default function ProjectManagement() {
   // Certificates
   const [downloadingCert, setDownloadingCert] = useState<string | null>(null);
   const [projectCerts, setProjectCerts] = useState<Record<string, string>>({}); // student_id -> cert_id
+
+  // Project actions
+  const [projectActing, setProjectActing] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -151,6 +154,47 @@ export default function ProjectManagement() {
     }
   };
 
+  const handlePublish = async () => {
+    if (!project) return;
+    setProjectActing(true);
+    try {
+      const res = await api.patch(`/api/projects/${id}/publish`);
+      setProject(res.data);
+      toast.success('Проєкт опубліковано');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    } finally {
+      setProjectActing(false);
+    }
+  };
+
+  const handleCancelProject = async () => {
+    if (!project || !confirm('Скасувати проєкт?')) return;
+    setProjectActing(true);
+    try {
+      const res = await api.patch(`/api/projects/${id}/cancel`);
+      setProject(res.data);
+      toast.success('Проєкт скасовано');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    } finally {
+      setProjectActing(false);
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    if (!project || !confirm(`Видалити «${project.title}»? Це незворотно.`)) return;
+    setProjectActing(true);
+    try {
+      await api.delete(`/api/projects/${id}`);
+      toast.success('Проєкт видалено');
+      window.location.href = '/company/projects';
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+      setProjectActing(false);
+    }
+  };
+
   if (loading) return <PageLoader />;
   if (!project) return <p>Проєкт не знайдено</p>;
 
@@ -159,6 +203,24 @@ export default function ProjectManagement() {
       <Link to="/company/projects" className="inline-flex items-center gap-1.5 text-slate-500 hover:text-indigo-600 text-sm font-medium transition-colors">
         <ArrowLeft size={16} /> Назад
       </Link>
+
+      {/* Draft banner */}
+      {project.is_draft && (
+        <div className="flex items-center justify-between gap-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+          <div>
+            <p className="font-semibold text-amber-800 text-sm">Чернетка — не видна студентам</p>
+            <p className="text-xs text-amber-600">Опублікуйте проєкт, щоб студенти могли подавати заявки.</p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button size="sm" isLoading={projectActing} onClick={handlePublish}>
+              <Globe size={13} /> Опублікувати
+            </Button>
+            <Button size="sm" variant="danger" isLoading={projectActing} onClick={handleDeleteProject}>
+              <Trash2 size={13} />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Project header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -169,19 +231,33 @@ export default function ProjectManagement() {
             <span className="flex items-center gap-1.5"><Users size={14} /> макс. {project.max_applicants}</span>
           </div>
         </div>
-        <Badge
-          variant={
-            project.status === 'open' ? 'success' :
-            project.status === 'completed' ? 'default' :
-            project.status === 'cancelled' ? 'danger' : 'warning'
-          }
-          className="text-sm"
-        >
-          {project.status === 'open' ? 'Відкритий' :
-           project.status === 'in_progress' ? 'В роботі' :
-           project.status === 'completed' ? 'Завершено' :
-           project.status === 'cancelled' ? 'Скасовано' : project.status}
-        </Badge>
+        <div className="flex items-center gap-2">
+          {!project.is_draft && (project.status === 'open' || project.status === 'in_progress') && (
+            <Button size="sm" variant="outline" isLoading={projectActing} onClick={handleCancelProject}>
+              <XCircle size={13} /> Скасувати
+            </Button>
+          )}
+          {!project.is_draft && project.status === 'cancelled' && (
+            <Button size="sm" variant="danger" isLoading={projectActing} onClick={handleDeleteProject}>
+              <Trash2 size={13} /> Видалити
+            </Button>
+          )}
+          {!project.is_draft && (
+            <Badge
+              variant={
+                project.status === 'open' ? 'success' :
+                project.status === 'completed' ? 'default' :
+                project.status === 'cancelled' ? 'danger' : 'warning'
+              }
+              className="text-sm"
+            >
+              {project.status === 'open' ? 'Відкритий' :
+               project.status === 'in_progress' ? 'В роботі' :
+               project.status === 'completed' ? 'Завершено' :
+               project.status === 'cancelled' ? 'Скасовано' : project.status}
+            </Badge>
+          )}
+        </div>
       </div>
 
       {project.skills && project.skills.length > 0 && (
@@ -319,10 +395,14 @@ export default function ProjectManagement() {
                   <div className="min-w-0">
                     <p className="font-semibold text-slate-900">{s.student?.first_name} {s.student?.last_name}</p>
                     <p className="text-xs text-slate-400">{formatDateTime(s.created_at)}</p>
-                    <p className="text-sm text-slate-600 mt-1 line-clamp-2">{s.content}</p>
+                    {s.comment && (
+                      <p className="text-sm text-slate-700 mt-1.5 bg-slate-50 rounded-xl p-3 border border-slate-100">
+                        {s.comment}
+                      </p>
+                    )}
                     {s.file_url && (
-                      <a href={s.file_url} target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-600 text-xs font-medium mt-1 inline-block transition-colors">
-                        Переглянути файл
+                      <a href={s.file_url} target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-600 text-xs font-medium mt-1 inline-flex items-center gap-1 transition-colors">
+                        <ExternalLink size={11} /> Переглянути файл / репозиторій
                       </a>
                     )}
                   </div>

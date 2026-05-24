@@ -30,12 +30,20 @@ def _bootstrap_db():
     """Create admin user and seed demo data if they don't exist yet."""
     import uuid
     from app.core.database import SessionLocal
+    from sqlalchemy import text
     from app.core.security import hash_password
     from app.models.user import User, UserRole, StudentProfile, CompanyProfile
     from app.models.skill import Skill
 
     db = SessionLocal()
     try:
+        # ── Schema migrations (idempotent) ──────────────────────────────────
+        db.execute(text(
+            "ALTER TABLE projects ADD COLUMN IF NOT EXISTS "
+            "is_draft BOOLEAN NOT NULL DEFAULT FALSE"
+        ))
+        db.commit()
+
         # ── Admin user ──────────────────────────────────────────────────────
         ADMIN_EMAIL = "admin@workhive.com"
         if not db.query(User).filter(User.email == ADMIN_EMAIL).first():

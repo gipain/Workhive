@@ -2,7 +2,7 @@ import uuid
 import enum
 from datetime import datetime
 
-from sqlalchemy import String, Integer, ForeignKey, DateTime, Enum as SAEnum, func
+from sqlalchemy import String, Integer, Boolean, ForeignKey, DateTime, Enum as SAEnum, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -25,6 +25,7 @@ class Project(Base):
     description: Mapped[str] = mapped_column(String(5000), nullable=False)
     requirements: Mapped[str | None] = mapped_column(String(5000), nullable=True)
     status: Mapped[ProjectStatus] = mapped_column(SAEnum(ProjectStatus, name="project_status"), default=ProjectStatus.open)
+    is_draft: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, server_default="false")
     deadline: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     max_applicants: Mapped[int] = mapped_column(Integer, default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
