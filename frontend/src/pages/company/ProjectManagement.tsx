@@ -52,10 +52,12 @@ export default function ProjectManagement() {
           toast.error('Помилка завантаження проєкту');
         }
         if (appsRes.status === 'fulfilled') {
-          setApplications(appsRes.value.data.items || appsRes.value.data);
+          const d = appsRes.value.data;
+          setApplications(Array.isArray(d?.items) ? d.items : Array.isArray(d) ? d : []);
         }
         if (subsRes.status === 'fulfilled') {
-          setSubmissions(subsRes.value.data.items || subsRes.value.data);
+          const d = subsRes.value.data;
+          setSubmissions(Array.isArray(d?.items) ? d.items : Array.isArray(d) ? d : []);
         }
         if (certsRes.status === 'fulfilled') {
           const certMap: Record<string, string> = {};
