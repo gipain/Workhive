@@ -17,8 +17,7 @@ export default function CompanyProfilePage() {
 
   const [companyName, setCompanyName] = useState('');
   const [description, setDescription] = useState('');
-  const [website, setWebsite] = useState('');
-  const [logoUrl, setLogoUrl] = useState('');
+
 
   useEffect(() => {
     api.get(`/api/companies/${user?.id}`)
@@ -26,8 +25,7 @@ export default function CompanyProfilePage() {
         const p: CompanyProfile = r.data;
         setCompanyName(p.company_name || '');
         setDescription(p.description || '');
-        setWebsite(p.website || '');
-        setLogoUrl(p.logo_url || '');
+
       })
       .catch(() => toast.error('Не вдалося завантажити профіль'))
       .finally(() => setLoading(false));
@@ -39,8 +37,7 @@ export default function CompanyProfilePage() {
       await api.put('/api/companies/me', {
         company_name: companyName || undefined,
         description: description || undefined,
-        website: website || undefined,
-        logo_url: logoUrl || undefined,
+
       });
       await fetchUser();
       toast.success('Профіль оновлено');
@@ -66,8 +63,6 @@ export default function CompanyProfilePage() {
           <Input label="Email" value={user?.email || ''} disabled />
           <Input label="Назва компанії" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="ТОВ «Приклад»" />
           <TextArea label="Опис" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Про вашу компанію..." rows={4} />
-          <Input label="Вебсайт" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://example.com" />
-          <Input label="URL логотипу" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://..." />
         </CardContent>
       </Card>
 

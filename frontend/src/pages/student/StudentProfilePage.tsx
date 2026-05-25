@@ -19,7 +19,7 @@ export default function StudentProfile() {
 
   const [university, setUniversity] = useState('');
   const [bio, setBio] = useState('');
-  const [portfolioUrl, setPortfolioUrl] = useState('');
+
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState('');
 
@@ -34,7 +34,7 @@ export default function StudentProfile() {
         setAllSkills(skillsRes.data);
         setUniversity(p.university || '');
         setBio(p.bio || '');
-        setPortfolioUrl(p.resume_url || '');
+
         setSelectedSkills((p.skills || []).map((s) => s.name));
       } catch {
         toast.error('Не вдалося завантажити профіль');
@@ -51,7 +51,7 @@ export default function StudentProfile() {
       await api.put('/api/students/me', {
         university: university || undefined,
         bio: bio || undefined,
-        resume_url: portfolioUrl || undefined,
+
         skill_names: selectedSkills,
       });
       await fetchUser();
@@ -106,12 +106,7 @@ export default function StudentProfile() {
             placeholder="Коротко про ваш досвід та інтереси..."
             rows={3}
           />
-          <Input
-            label="Портфоліо URL"
-            value={portfolioUrl}
-            onChange={(e) => setPortfolioUrl(e.target.value)}
-            placeholder="https://github.com/username"
-          />
+
         </CardContent>
       </Card>
 
